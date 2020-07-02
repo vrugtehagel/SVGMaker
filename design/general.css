@@ -1,0 +1,442 @@
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font: 18px/1.5 Roboto, sans-serif;
+  background-color: #181818;
+}
+
+::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.4);
+  cursor: default;
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(128, 128, 128, 0.2);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.2) transparent;
+}
+
+input, textarea, button {
+  letter-spacing: -0.05ch;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+  border-radius: 4px;
+}
+
+button {
+  text-transform: uppercase;
+  opacity: 0.6;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+section {
+  position: fixed;
+  width: 100%;
+  height: 100vh;
+  bottom: 0;
+  right: 0;
+  background-color: #202020;
+  overflow: hidden;
+}
+
+::selection {
+  color: rgba(0, 0, 0, 0.7);
+  background-color: white;
+}
+
+#text-editor {
+  transition: opacity 0.15s linear;
+}
+#text-editor textarea {
+  width: 100%;
+  height: 100%;
+  padding: 2em 2em 50vh 2em;
+  box-sizing: border-box;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 0.8em;
+}
+#text-editor textarea::-webkit-scrollbar {
+  height: 0;
+  width: 0;
+}
+
+#visual-editor {
+  transition: width 0.3s, height 0.3s, right 0.3s, bottom 0.3s;
+  border: 12px solid #303030;
+  border-radius: 12px 0 0 0;
+  width: 40%;
+  height: 40%;
+  cursor: pointer;
+}
+
+body:not(.visual-editor) #visual-editor * {
+  pointer-events: none;
+}
+
+.visual-editor #text-editor {
+  opacity: 0;
+}
+.visual-editor #text-editor::after {
+  content: none;
+}
+.visual-editor #visual-editor {
+  right: -12px;
+  bottom: -12px;
+  width: 100%;
+  height: 100vh;
+  cursor: initial;
+}
+.visual-editor #actions {
+  transform: none;
+  transition: transform 0.2s 0.2s;
+}
+.visual-editor #side-panel {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s 0.2s, transform 0.3s 0.2s;
+}
+.visual-editor #bubble-info {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s 0.2s, transform 0.3s 0.2s;
+}
+.visual-editor #peek-commands {
+  opacity: 1;
+  transform: translateY(-50%);
+  transition: opacity 0.3s 0.2s, transform 0.3s 0.2s;
+}
+
+#actions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(-100%);
+  transition: none;
+  padding: 6px;
+}
+#actions button {
+  padding: 12px;
+  position: relative;
+}
+#actions button svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+#actions button::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0);
+  transition: 0.2s;
+}
+#actions button:hover::after {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+#actions button:active::after {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#side-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 24px;
+  width: 324px;
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity 0.15s 0s, transform 0.15s 0s;
+  overflow: auto;
+  max-height: 100vh;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+#all-paths {
+  list-style: none;
+  margin: 0;
+  width: 100%;
+  padding: 0;
+}
+#all-paths li {
+  pointer-events: initial;
+  margin-bottom: 6px;
+  padding: 6px 18px;
+  border-radius: 4px;
+  background-color: #282828;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  flex-direction: column;
+  transition: padding-bottom 0.3s, background-color 0.2s;
+}
+#all-paths li span {
+  display: block;
+}
+#all-paths li textarea {
+  padding: 0 1em;
+  width: 100%;
+  box-sizing: border-box;
+  height: 0;
+  overflow: auto;
+  resize: none;
+  font-size: 0.7em;
+  background-color: #282828;
+  transition: 0.3s;
+  word-break: break-all;
+}
+#all-paths li.selected {
+  background-color: #303030;
+  padding-bottom: 18px;
+}
+#all-paths li.selected textarea {
+  height: 200px;
+  padding: 0.5em 1em;
+  margin-top: 12px;
+}
+
+#add-path {
+  float: right;
+  pointer-events: initial;
+  padding: 6px 18px;
+  box-sizing: border-box;
+  text-align: right;
+}
+
+#error.shown, #error:hover {
+  opacity: 1;
+  pointer-events: initial;
+  transform: none;
+}
+
+#error {
+  width: calc(100% - 48px);
+  max-width: 500px;
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  color: tomato;
+  transition: 0.4s;
+  cursor: pointer;
+  padding: 12px 24px;
+  border-radius: 8px;
+  background-color: #303030;
+  transform: translateY(36px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#preview {
+  position: absolute;
+  width: 50%;
+  left: 50%;
+  top: 50%;
+  --aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+}
+#preview svg {
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+#preview::after {
+  content: "";
+  display: block;
+  width: 100%;
+  pointer-events: none;
+  padding-bottom: calc(var(--aspect-ratio) * 100%);
+}
+
+#bubbles {
+  overflow: visible;
+  pointer-events: none;
+}
+#bubbles * {
+  pointer-events: initial;
+}
+
+#bubbles circle {
+  fill: rgba(255, 255, 255, 0.3);
+  transition: fill 0.2s;
+}
+#bubbles circle:hover {
+  fill: rgba(255, 255, 255, 0.9);
+}
+#bubbles circle.active {
+  fill: rgba(255, 255, 255, 0.9);
+}
+#bubbles circle.active + circle:not(:hover) {
+  fill: rgba(255, 255, 255, 0.7);
+}
+
+#bubble-info, #bubble-info.hidden {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  max-width: 60vw;
+  padding: 12px;
+  display: flex;
+  flex-direction: row;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: opacity 0.15s 0s, transform 0.15s 0s;
+}
+
+#bubble-command {
+  display: inline-block;
+  background-color: #282828;
+  border-radius: 4px;
+  width: 1.5em;
+  text-align: center;
+  padding: 6px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#bubble-options {
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+#bubble-options li {
+  margin-left: 6px;
+}
+#bubble-options input {
+  background-color: #282828;
+  padding: 6px 12px;
+  width: 3em;
+  line-height: inherit;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+#peek-commands, #peek-commands.hidden {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  background-color: #282828;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate(-100%, -50%);
+  padding: 12px 0;
+  color: rgba(255, 255, 255, 0.4);
+  border-radius: 0 12px 12px 0;
+  margin: 0;
+  width: 48px;
+  opacity: 0;
+  transition: 0.2s;
+}
+#peek-commands li, #peek-commands.hidden li {
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+  transition: 0.2s;
+}
+#peek-commands li::after, #peek-commands.hidden li::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  transform: scale(0.9) translate(-50%, -50%);
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: 0.2s;
+}
+#peek-commands li.selected, #peek-commands.hidden li.selected {
+  color: rgba(255, 255, 255, 0.6);
+}
+#peek-commands li.selected::after, #peek-commands.hidden li.selected::after {
+  transform: translate(-50%, -50%);
+  opacity: 1;
+}
+
+.terminal #terminal {
+  left: 0;
+  opacity: 1;
+  transition: opacity 0.3s, left 0s;
+}
+
+#terminal {
+  background-color: #101010;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: monospace;
+  left: 100vw;
+  opacity: 0;
+  transition: opacity 0.3s, left 0s 0.3s;
+  cursor: text;
+}
+#terminal .error {
+  color: tomato;
+}
+#terminal pre {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  flex: 1;
+  margin: 0;
+  padding: 0 0 2em 0;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+}
+#terminal pre::after {
+  line-height: 2;
+  content: " > ";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+#terminal input {
+  font-family: inherit;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2em;
+  width: 100%;
+  padding: 0 0 0 3ch;
+}
+
+/*# sourceMappingURL=general.css.map */

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<link rel="icon" href="favicon.ico" type="image/x-icon" />
+
+	<link rel="stylesheet" href="design/general.css">
+
+	<script src="javascript/options.js"></script>
+	<script src="javascript/Path.js"></script>
+	<script src="javascript/UI.js"></script>
+	<script src="javascript/terminal.js"></script>
+	<script src="javascript/current.js"></script>
+	<script src="javascript/general.js"></script>
+
+	<title>SVGMaker</title>
+</head>
+<body spellcheck="false">
+	<section id="text-editor">
+		<textarea></textarea>
+	</section>
+	<section id="visual-editor">
+		<div id="preview">
+			<svg id="product"></svg>
+			<svg id="bubbles"></svg>
+		</div>
+		<div id="side-panel">
+			<ul id="all-paths"></ul>
+			<button id="add-path">+ add</button>
+		</div>
+		<div id="actions">
+			<button id="edit-button">
+				<svg viewBox="0 0 36 36">
+					<path style="fill:currentColor;fill-rule:evenodd;" d="M0 5Q0 0 5 0H31Q36 0 36 5V31Q36 36 31 36H5Q0 36 0 31M4 6Q4 4 6 4H30Q32 4 32 6V17H19Q15 17 15 21V32H6Q4 32 4 30Z"/>
+				</svg>
+			</button>
+			<button>
+				<svg viewBox="0 0 36 36">
+					<path style="fill:currentColor;" d="M4 22A4 4 0 0 1 4 14H14V4A4 4 0 0 1 22 4V14H32A4 4 0 0 1 32 22H22V32A4 4 0 0 1 14 32V22Z"/>
+				</svg>
+			</button>
+		</div>
+		<div id="bubble-info">
+			<span id="bubble-command"></span>
+			<ul id="bubble-options"></ul>
+		</div>
+		<ul id="peek-commands">
+			<li>M</li>
+			<li>L</li>
+			<li>H</li>
+			<li>V</li>
+			<li>Z</li>
+			<li>C</li>
+			<li>S</li>
+			<li>Q</li>
+			<li>T</li>
+			<li>A</li>
+		</ul>
+	</section>
+	<section id="terminal">
+		<pre>Welcome to the terminal.
+Type "help" for a list of commands
+Type "exit" to exit the terminal
+</pre>
+		<input>
+	</section>
+	<div id="error"></div>
+</body>
+</html>

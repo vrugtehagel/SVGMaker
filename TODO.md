@@ -1,0 +1,5 @@
+ - would be nice, if I could click on a shape/path to activate it
+ - move/hand tool would be useful
+ - doesn't seem to offer any edit functionality for non path SVG elements, non-style attributes
+ - some kind of coordinates/alignment system in the visual editor would be nice
+ - a tooltip (for the letters) would do wonders and would actually teach a bit
