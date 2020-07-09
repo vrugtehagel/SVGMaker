@@ -6,7 +6,7 @@ html, body {
 body {
   margin: 0;
   color: rgba(255, 255, 255, 0.6);
-  font: 18px/1.5 Roboto, sans-serif;
+  font: 18px/1.5 monospace;
   background-color: #181818;
 }
 
@@ -117,11 +117,6 @@ body:not(.visual-editor) #visual-editor * {
   transform: none;
   transition: transform 0.2s 0.2s;
 }
-.visual-editor #side-panel {
-  opacity: 1;
-  transform: none;
-  transition: opacity 0.3s 0.2s, transform 0.3s 0.2s;
-}
 .visual-editor #bubble-info {
   opacity: 1;
   transform: none;
@@ -166,72 +161,6 @@ body:not(.visual-editor) #visual-editor * {
 }
 #actions button:active::after {
   background-color: rgba(255, 255, 255, 0.2);
-}
-
-#side-panel {
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding: 24px;
-  width: 324px;
-  opacity: 0;
-  transform: translateX(36px);
-  transition: opacity 0.15s 0s, transform 0.15s 0s;
-  overflow: auto;
-  max-height: 100vh;
-  box-sizing: border-box;
-  pointer-events: none;
-}
-
-#all-paths {
-  list-style: none;
-  margin: 0;
-  width: 100%;
-  padding: 0;
-}
-#all-paths li {
-  pointer-events: initial;
-  margin-bottom: 6px;
-  padding: 6px 18px;
-  border-radius: 4px;
-  background-color: #282828;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.4);
-  display: flex;
-  flex-direction: column;
-  transition: padding-bottom 0.3s, background-color 0.2s;
-}
-#all-paths li span {
-  display: block;
-}
-#all-paths li textarea {
-  padding: 0 1em;
-  width: 100%;
-  box-sizing: border-box;
-  height: 0;
-  overflow: auto;
-  resize: none;
-  font-size: 0.7em;
-  background-color: #282828;
-  transition: 0.3s;
-  word-break: break-all;
-}
-#all-paths li.selected {
-  background-color: #303030;
-  padding-bottom: 18px;
-}
-#all-paths li.selected textarea {
-  height: 200px;
-  padding: 0.5em 1em;
-  margin-top: 12px;
-}
-
-#add-path {
-  float: right;
-  pointer-events: initial;
-  padding: 6px 18px;
-  box-sizing: border-box;
-  text-align: right;
 }
 
 #error.shown, #error:hover {
@@ -280,6 +209,10 @@ body:not(.visual-editor) #visual-editor * {
   width: 100%;
   pointer-events: none;
   padding-bottom: calc(var(--aspect-ratio) * 100%);
+}
+
+#preview.svg-overflow-visible svg:first-child {
+  overflow: visible;
 }
 
 #bubbles {
@@ -341,7 +274,9 @@ body:not(.visual-editor) #visual-editor * {
 #bubble-options input {
   background-color: #282828;
   padding: 6px 12px;
-  width: 3em;
+  box-sizing: content-box;
+  width: 3ch;
+  text-align: center;
   line-height: inherit;
   color: rgba(255, 255, 255, 0.4);
 }
@@ -401,7 +336,6 @@ body:not(.visual-editor) #visual-editor * {
 #terminal {
   background-color: #101010;
   color: rgba(255, 255, 255, 0.6);
-  font-family: monospace;
   left: 100vw;
   opacity: 0;
   transition: opacity 0.3s, left 0s 0.3s;
@@ -430,7 +364,6 @@ body:not(.visual-editor) #visual-editor * {
   bottom: 0;
 }
 #terminal input {
-  font-family: inherit;
   position: absolute;
   bottom: 0;
   left: 0;

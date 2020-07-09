@@ -88,6 +88,9 @@ const terminal = {
 					return;
 				}
 				if(action == 'set'){
+					if(value == 'true') value = true;
+					else if(value == 'false') value = false;
+					else if(value == +value) value = +value;
 					terminal.write(options[option] = value);
 					return;
 				}
@@ -131,7 +134,7 @@ const terminal = {
 				const dataURL = 'data:image/svg+xml;base64,' + btoa(content);
 				if(!xmlns) current.SVG.removeAttribute('xmlns');
 				const a = document.createElement('a');
-				const body = document.querySelector('body');
+				const body = document.body;
 				if(format == 'svg'){
 					a.href = dataURL;
 					a.download = 'untitled.svg';

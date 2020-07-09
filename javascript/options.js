@@ -4,5 +4,6 @@ const options = {
 	errorTimeShown: 4000,
 	bubbleSize: 18,
 	snap: 1,
-	defaultPathStyle: 'stroke:red;fill:none;'
+	defaultPathStyle: 'stroke:red;fill:none;',
+	SVGOverflowVisible: false
 }

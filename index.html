@@ -5,6 +5,7 @@
 	<link rel="icon" href="favicon.ico" type="image/x-icon" />
 
 	<link rel="stylesheet" href="design/general.css">
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400" rel="stylesheet">
 
 	<script src="javascript/options.js"></script>
 	<script src="javascript/Path.js"></script>
@@ -19,14 +20,12 @@
 	<section id="text-editor">
 		<textarea></textarea>
 	</section>
+
+
 	<section id="visual-editor">
 		<div id="preview">
 			<svg id="product"></svg>
 			<svg id="bubbles"></svg>
-		</div>
-		<div id="side-panel">
-			<ul id="all-paths"></ul>
-			<button id="add-path">+ add</button>
 		</div>
 		<div id="actions">
 			<button id="edit-button">
@@ -44,7 +43,9 @@
 			<span id="bubble-command"></span>
 			<ul id="bubble-options"></ul>
 		</div>
-		<ul id="peek-commands">
+
+
+		<ul id="peek-commands" style="display:none;">
 			<li>M</li>
 			<li>L</li>
 			<li>H</li>
@@ -57,6 +58,8 @@
 			<li>A</li>
 		</ul>
 	</section>
+
+
 	<section id="terminal">
 		<pre>Welcome to the terminal.
 Type "help" for a list of commands

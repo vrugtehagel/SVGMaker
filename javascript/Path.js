@@ -111,25 +111,34 @@ const Path = class {
 	};
 	removePoint(ID){
 		if(ID < 0) return;
+		let index = 0;
 		let id = 0;
-		let index = -1;
 		for(const item of this.data){
-			index++;
-			if(item.command == 'H' || item.command == 'V'){
-				if(ID == id){
-					this.data.splice(index, 1);
-					break;
-				}
-				id++;
-				continue;
-			}
-			if(ID <= id){
+			if(item.command == 'H' || item.command == 'V') id++;
+			else id += Path.commands[item.command].filter(role => role == 'x').length;
+			if(ID < id){
 				this.data.splice(index, 1);
 				break;
 			}
-			id += Path.commands[item.command].filter(role => role == 'x').length;
+			index++;
 		}
 		this.update();
+	};
+	getItemByPoint(ID){
+		let id = 0;
+		for(const item of this.data){
+			if(item.command == 'H') if(ID == id++) return item; else continue;
+			if(item.command == 'V') if(ID == id++) return item; else continue;
+			for(const [ind, num] of Object.entries(item.data)){
+				if(Path.commands[item.command][ind] != 'x') continue;
+				if(id++ == ID) return item;
+			}
+		}
+	};
+	getOptions(index){
+		return this.data[index].data.filter((num, ind) => {
+			return Path.commands[this.data[index].command][ind] == 'o';
+		});
 	};
 	setOptions(index, options){
 		let i = 0;
@@ -152,10 +161,9 @@ const Path = class {
 	static getAmountOfPoints(command){
 		const roles = Path.commands[command.toUpperCase()];
 		return Math.round(roles.filter(r => r != 'o').length / 2);
-	}
-	addPoint(command, points = []){
+	};
+	/*addPoint(command, points = []){
 		const previousCommand = this.data.length > 1 ? this.data[this.data.length - 1].command : '';
-		if(command != 'M' && previousCommand == 'Z') this.data.pop();
 		if(command == 'M' && previousCommand == 'M') this.data.pop();
 		let i = 0;
 		const data = (() => {
@@ -173,6 +181,28 @@ const Path = class {
 			absolute: true,
 			index: this.data.length
 		});
+		this.update();
+	};*/
+	insertPointAt(command, ID){
+		const item = this.getItemByPoint(ID);
+		let x, y;
+		let index = item.index;
+		const setCoordinateFrom = item => {
+			if(item.command == 'V') return y = item.data[0];
+			if(item.command == 'H') return x = item.data[0];
+			return [x, y] = item.data.slice(-2);
+		};
+		while(x === undefined || y === undefined){
+			setCoordinateFrom(this.data[index]);
+			index--;
+		}
+		// x and y now contain the end points of item
+		this.data.splice(item.index + 1, 0, {
+			command,
+			data: Path.commands[command].map(role => role == 'x' ? x : role == 'y' ? y : 0),
+			absolute: true
+		});
+		this.data.forEach((item, index) => item.index = index);
 		this.update();
 	};
 	moveBy(x, y){
