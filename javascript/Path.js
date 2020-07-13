@@ -1,24 +1,12 @@
-const Path = class {
+class Path {
 	constructor(path){
 		this.element = path;
 		this._parse(this.element.getAttribute('d'));
 		this.onHold = [];
 	};
-	static commands = {
-		'M': ['x', 'y'],
-		'L': ['x', 'y'],
-		'H': ['x'],
-		'V': ['y'],
-		'Z': [],
-		'C': ['x', 'y', 'x', 'y', 'x', 'y'],
-		'S': ['x', 'y', 'x', 'y'],
-		'Q': ['x', 'y', 'x', 'y'],
-		'T': ['x', 'y'],
-		'A': ['o', 'o', 'o', 'o', 'o', 'x', 'y']
-	};
 	_parse(d){
 		if(!d) return this.data = [];
-		const data = d.split(/\s*\,\s*|\s+|(?<=[a-zA-Z])|(?=[a-zA-Z])/);
+		const data = d.split(/([a-zA-Z])|\s*\,?\s*/g).filter(s => s);
 		let i = 0;
 		this.data = data.filter(a => isNaN(a)).map((a, n) => ({
 			command: a.toUpperCase(),
@@ -217,3 +205,29 @@ const Path = class {
 		this.update();
 	};
 }
+
+Path.commands = {
+	'M': ['x', 'y'],
+	'L': ['x', 'y'],
+	'H': ['x'],
+	'V': ['y'],
+	'Z': [],
+	'C': ['x', 'y', 'x', 'y', 'x', 'y'],
+	'S': ['x', 'y', 'x', 'y'],
+	'Q': ['x', 'y', 'x', 'y'],
+	'T': ['x', 'y'],
+	'A': ['o', 'o', 'o', 'o', 'o', 'x', 'y']
+};
+
+Path.commandDescriptions = {
+	'M': 'Move to',
+	'L': 'Line to',
+	'H': 'Horizontal line to',
+	'V': 'Vertical line to',
+	'Z': 'Close path',
+	'C': 'Cubic bezier curve to',
+	'S': 'Smooth cubic bezier curve to',
+	'Q': 'Quadratic bezier curve to',
+	'T': 'Smooth quadratic bezier curve to',
+	'A': 'Elliptical arc to'
+};

@@ -4,18 +4,41 @@ const terminal = {
 	setup: function(){
 		const section = document.getElementById('terminal');
 		const input = section.querySelector('input');
+		let historyIndex = -1;
+		let currentValue = '';
 		terminal._pre = section.querySelector('pre');
+		// handle standard functionality
 		section.addEventListener('click', () => {
 			input.focus();
 		});
 		input.addEventListener('keydown', event => {
 			if(event.key == 'Enter'){
+				if(!input.value) return;
+				historyIndex = -1;
 				terminal.run(input.value);
 				input.value = '';
 				return;
 			}
 		});
+		// set command names
 		for(const command in terminal.commands) terminal.commands[command].name = command;
+		// set history arrow key navigation
+		input.addEventListener('keydown', event => {
+			if(event.key == 'ArrowDown'){
+				if(historyIndex == -1) return;
+				historyIndex--;
+				if(historyIndex == -1) return input.value = currentValue;
+				input.value = terminal.history[historyIndex];
+				return;
+			}
+			if(event.key == 'ArrowUp'){
+				if(historyIndex == -1) currentValue = input.value;
+				if(historyIndex == terminal.history.length - 1) return;
+				historyIndex++;
+				input.value = terminal.history[historyIndex];
+				return;
+			}
+		})
 	},
 	write: function(text, css){
 		if(!css){
@@ -37,7 +60,7 @@ const terminal = {
 		terminal._pre.appendChild(textNode);
 	},
 	run: function(command){
-		terminal.history.push(command);
+		terminal.history.unshift(command);
 		terminal.write('> ' + command);
 		const name = command.includes(' ') ? command.slice(0, command.indexOf(' ')) : command;
 		if(!terminal.commands[name]) return terminal.error(`command "${name}" was not recognized as a valid command`);
@@ -91,7 +114,8 @@ const terminal = {
 					if(value == 'true') value = true;
 					else if(value == 'false') value = false;
 					else if(value == +value) value = +value;
-					terminal.write(options[option] = value);
+					if(options[option] === undefined) terminal.error(`option "${option}" does not exist`);
+					else options[option] = value;
 					return;
 				}
 				if(action == '' || action === undefined){

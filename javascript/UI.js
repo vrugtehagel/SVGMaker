@@ -1,5 +1,8 @@
 const UI = {
 	dragging: false,
+	get preventMouseDown(){
+		return UI.dragging;
+	},
 	setup: function(){
 		// set events to swapTo a different editor
 		(() => {
@@ -90,6 +93,7 @@ const UI = {
 			document.addEventListener('contextmenu', event => event.preventDefault());
 
 			document.addEventListener('wheel', event => {
+				if(!visualEditor.contains(event.target)) return;
 				const delta = Math.sign(event.deltaY);
 				if(event.deltaY < 0) zoom *= 0.9;
 				if(event.deltaY > 0) zoom *= 1.1;
@@ -143,6 +147,7 @@ const UI = {
 			const visualEditor = document.getElementById('visual-editor');
 			visualEditor.addEventListener('mousedown', event => {
 				if(event.target == visualEditor || event.target == current.SVG){
+					if(UI.preventMouseDown) return;
 					UI.select(null);
 				}
 			});
@@ -231,6 +236,7 @@ const UI = {
 		obj.mouse = { x: 0, y: 0, dx: 0, dy: 0 };
 		obj.element.addEventListener('mousedown', event => {
 			if(obj.button !== undefined && obj.button != event.button) return;
+			if(UI.dragging) return;
 			UI.dragging = obj;
 			if(!UI.dragging.mousedown) return;
 			const {x, y} = UI.getPositionInSVG(event.clientX, event.clientY);
@@ -345,17 +351,19 @@ const UI = {
 			const id = current.bubbles.indexOf(circle);
 			const item = current.activeElement.getItemByPoint(id);
 			const index = item.index;
-			const options = current.activeElement.getOptions(index);
+			const commandOptions = current.activeElement.getOptions(index);
 			bubbleCommand.textContent = item.absolute ? item.command : item.command.toLowerCase();
-			options.forEach((option, i) => {
+			if(options.showTooltips) bubbleCommand.setAttribute('data-tooltip', Path.commandDescriptions[item.command]);
+			else bubbleCommand.removeAttribute('data-tooltip');
+			commandOptions.forEach((option, i) => {
 				const li = document.createElement('li');
 				const input = document.createElement('input');
 				input.value = option;
 				input.addEventListener('input', () => {
 					const value = parseFloat(input.value);
 					if(isNaN(value)) return;
-					options[i] = value;
-					current.activeElement.setOptions(index, options);
+					commandOptions[i] = value;
+					current.activeElement.setOptions(index, commandOptions);
 				});
 				li.appendChild(input);
 				bubbleOptions.appendChild(li);

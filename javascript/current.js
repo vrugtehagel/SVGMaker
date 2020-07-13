@@ -5,12 +5,17 @@ current = {
 	bubbles: [],
 	size: null,
 	editor: 'text',
+	history: [],
 	setup: function(){
 		current.SVG = document.getElementById('product');
 		current.restore();
 	},
 	save: function(){
-		localStorage.SVGMaker = current.getSVGAsText();
+		const text = current.getSVGAsText();
+		localStorage.SVGMaker = text;
+		history.unshift(text);
+		let totalLength = current.history.reduce((acc, cur) => acc + cur.length, 0);
+		while(totalLength > options.maxHistoryMemory) totalLength -= current.history.pop().length;
 	},
 	restore: function(){
 		const textarea = document.querySelector('#text-editor textarea');
@@ -25,9 +30,15 @@ current = {
 	},
 	SVGParseError: function(text){
 		const parser = new DOMParser();
-		const file = parser.parseFromString(text, 'image/svg+xml');
-		const error = file.querySelector('parsererror');
-		return error ? error.querySelector('div').textContent : '';
+		try {
+			const file = parser.parseFromString(text, 'image/svg+xml');
+			const error = file.querySelector('parsererror');
+			if(!error) return '';
+			return error.textContent;
+		}
+		catch(error){
+			return error.message;
+		}
 	},
 	getSVGAsText: function(){
 		const voidTags = ['path', 'circle', 'rect', 'line'];

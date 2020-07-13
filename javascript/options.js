@@ -5,5 +5,7 @@ const options = {
 	bubbleSize: 18,
 	snap: 1,
 	defaultPathStyle: 'stroke:red;fill:none;',
-	SVGOverflowVisible: false
+	SVGOverflowVisible: false,
+	showTooltips: true,
+	maxHistoryMemory: 200000
 }
