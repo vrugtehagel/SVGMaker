@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	UI.setup();
 	terminal.setup();
 	current.setup();
+	options.setup();
 });
 
 HTMLElement.prototype.empty = function(){ while(this.firstChild) this.removeChild(this.lastChild); };

@@ -5,7 +5,7 @@
 	<link rel="icon" href="favicon.ico" type="image/x-icon" />
 
 	<link rel="stylesheet" href="design/general.css">
-	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300" rel="stylesheet">
 
 	<script src="javascript/options.js"></script>
 	<script src="javascript/Path.js"></script>
@@ -26,37 +26,124 @@
 		<div id="preview">
 			<svg id="product"></svg>
 			<svg id="bubbles"></svg>
+			<span id="mouse-coordinates" hidden></span>
 		</div>
 		<div id="actions">
-			<button id="edit-button">
+			<button id="edit-button" title="Text editor">
 				<svg viewBox="0 0 36 36">
 					<path style="fill:currentColor;fill-rule:evenodd;" d="M0 5Q0 0 5 0H31Q36 0 36 5V31Q36 36 31 36H5Q0 36 0 31M4 6Q4 4 6 4H30Q32 4 32 6V17H19Q15 17 15 21V32H6Q4 32 4 30Z"/>
 				</svg>
 			</button>
-			<button>
+			<button data-action="add" title="Add new path">
 				<svg viewBox="0 0 36 36">
-					<path style="fill:currentColor;" d="M4 22A4 4 0 0 1 4 14H14V4A4 4 0 0 1 22 4V14H32A4 4 0 0 1 32 22H22V32A4 4 0 0 1 14 32V22Z"/>
+					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M32 18H4H18V4V32"/>
+				</svg>
+			</button>
+			<button data-action="selectPrevious" title="Select next path">
+				<svg viewBox="0 0 36 36">
+					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M32 18H4L16 6L4 18L16 30"/>
+				</svg>
+			</button>
+			<button data-action="selectNext" title="Select previous path">
+				<svg viewBox="0 0 36 36">
+					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M4 18H32L20 6L32 18L20 30"/>
+				</svg>
+			</button>
+			<button id="remove-path" data-action="remove" title="Delete current path" hidden>
+				<svg viewBox="0 0 36 36">
+					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M6 6L30 30L18 18L6 30L30 6"/>
 				</svg>
 			</button>
 		</div>
-		<div id="bubble-info">
+		<div id="bubble-info" hidden>
 			<span id="bubble-command"></span>
 			<ul id="bubble-options"></ul>
 		</div>
 
 
-		<ul id="peek-commands" style="display:none;">
-			<li>M</li>
-			<li>L</li>
-			<li>H</li>
-			<li>V</li>
-			<li>Z</li>
-			<li>C</li>
-			<li>S</li>
-			<li>Q</li>
-			<li>T</li>
-			<li>A</li>
-		</ul>
+		<div id="edit-actions" hidden>
+			<ul id="insert-command">
+				<li data-insert="M">
+					<svg viewBox="0 0 36 36">
+						<circle cx="18" cy="18" r="4" style="fill:currentColor;"/>
+					</svg>
+				</li>
+				<li data-insert="L">
+					<svg viewBox="0 0 36 36">
+						<circle cx="7" cy="7" r="4" style="fill:currentColor;"/>
+						<circle cx="29" cy="29" r="4" style="fill:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M11 11L25 25"/>
+					</svg>
+				</li>
+				<li data-insert="H">
+					<svg viewBox="0 0 36 36">
+						<circle cx="4" cy="18" r="4" style="fill:currentColor;"/>
+						<circle cx="32" cy="18" r="4" style="fill:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M9 18H27"/>
+					</svg>
+				</li>
+				<li data-insert="V">
+					<svg viewBox="0 0 36 36">
+						<circle cx="18" cy="4" r="4" style="fill:currentColor;"/>
+						<circle cx="18" cy="32" r="4" style="fill:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M18 9V27"/>
+					</svg>
+				</li>
+				<li data-insert="Z">
+					<svg viewBox="0 0 36 36">
+						<circle cx="7" cy="7" r="4" style="fill:currentColor;"/>
+						<circle cx="29" cy="29" r="4" style="stroke-width:2px;fill:none;stroke:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M11 11L24 24"/>
+					</svg>
+				</li>
+				<li data-insert="C">
+					<svg viewBox="0 0 36 36">
+						<circle cx="5" cy="5" r="4" style="fill:currentColor;"/>
+						<circle cx="29" cy="9" r="4" style="fill:currentColor;"/>
+						<circle cx="10" cy="24" r="4" style="fill:currentColor;"/>
+						<circle cx="31" cy="31" r="4" style="fill:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M10 6C29 11 12 23 26 29"/>
+					</svg>
+				</li>
+				<li data-insert="S">
+					<svg viewBox="0 0 36 36">
+						<circle cx="5" cy="5" r="4" style="fill:currentColor;"/>
+						<circle cx="29" cy="9" r="4" style="stroke-width:2px;fill:none;stroke:currentColor;"/>
+						<circle cx="10" cy="24" r="4" style="fill:currentColor;"/>
+						<circle cx="31" cy="31" r="4" style="fill:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M10 6C29 11 12 23 26 29"/>
+					</svg>
+				</li>
+				<li data-insert="Q">
+					<svg viewBox="0 0 36 36">
+						<circle cx="5" cy="14" r="4" style="fill:currentColor;"/>
+						<circle cx="29" cy="7" r="4" style="fill:currentColor;"/>
+						<circle cx="31" cy="31" r="4" style="fill:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M10 13Q28 9 30 26"/>
+					</svg>
+				</li>
+				<li data-insert="T">
+					<svg viewBox="0 0 36 36">
+						<circle cx="5" cy="14" r="4" style="fill:currentColor;"/>
+						<circle cx="29" cy="7" r="4" style="stroke-width:2px;fill:none;stroke:currentColor;"/>
+						<circle cx="31" cy="31" r="4" style="fill:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M10 13Q28 9 30 26"/>
+					</svg>
+				</li>
+				<li data-insert="A">
+					<svg viewBox="0 0 36 36">
+						<circle cx="4" cy="28" r="4" style="fill:currentColor;"/>
+						<circle cx="32" cy="28" r="4" style="fill:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M4 23A14 14 0 0 1 32 23"/>
+					</svg>
+				</li>
+			</ul>
+			<button id="remove-command" title="Delete current command">
+				<svg viewBox="0 0 36 36">
+					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M8 8L28 28L18 18L8 28L28 8"/>
+				</svg>
+			</button>
+		</div>
 	</section>
 
 

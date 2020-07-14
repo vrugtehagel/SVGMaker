@@ -10,13 +10,12 @@ It does this by offering a basic text editor and accompanying it with the follow
 ---
 ## Current feedback
  - doesn't seem to offer any edit functionality for non path SVG elements, non-style attributes
- - some kind of coordinates/alignment system in the visual editor would be nice
 
 ## Current todo
- - add visual interface for UI.bubbles.insert and UI.bubbles.remove
- - add save functionality for visual editor and terminal
+ - add save functionality for visual editor
  - add ctrl + Z and ctrl + Y functionality
 
 ## Future todo
  - improve text editor (syntax highlighting, indentation-related functionality)
  - add functionality for rect, circle, ellipse, ?line, ?polyline, ?polygon
+

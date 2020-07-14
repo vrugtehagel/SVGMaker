@@ -6,7 +6,7 @@ class Path {
 	};
 	_parse(d){
 		if(!d) return this.data = [];
-		const data = d.split(/([a-zA-Z])|\s*\,?\s*/g).filter(s => s);
+		const data = d.match(/[a-z]|-?\d*\.?\d+/ig);
 		let i = 0;
 		this.data = data.filter(a => isNaN(a)).map((a, n) => ({
 			command: a.toUpperCase(),
@@ -49,7 +49,7 @@ class Path {
 			if(item.command == 'M') start = {...current};
 			if(item.command == 'Z') current = {...start};
 		});
-		return result;
+		return result.trim();
 	};
 	getPoints(){
 		let id = 0;
@@ -150,27 +150,6 @@ class Path {
 		const roles = Path.commands[command.toUpperCase()];
 		return Math.round(roles.filter(r => r != 'o').length / 2);
 	};
-	/*addPoint(command, points = []){
-		const previousCommand = this.data.length > 1 ? this.data[this.data.length - 1].command : '';
-		if(command == 'M' && previousCommand == 'M') this.data.pop();
-		let i = 0;
-		const data = (() => {
-			const xs = points.map(point => point.x);
-			const ys = points.map(point => point.y);
-			return Array.from(Path.commands[command], val => {
-				if(val == 'o') return 0;
-				if(val == 'x') return xs.shift();
-				if(val == 'y') return ys.shift();
-			});
-		})();
-		this.data.push({
-			command: command,
-			data: data,
-			absolute: true,
-			index: this.data.length
-		});
-		this.update();
-	};*/
 	insertPointAt(command, ID){
 		const item = this.getItemByPoint(ID);
 		let x, y;

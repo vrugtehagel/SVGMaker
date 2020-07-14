@@ -5,6 +5,34 @@ $bubbleColor: rgba(255, 255, 255, 0.3);
 $nextBubbleColor: rgba(255, 255, 255, 0.7);
 $activeBubbleColor: rgba(255, 255, 255, 0.9);
 
+@mixin iconButton {
+	width: 24px;
+	height: 24px;
+	box-sizing: content-box;
+	cursor: pointer;
+	padding: 12px;
+	position: relative;
+	opacity: 0.6;
+	svg {
+		width: 24px;
+		height: 24px;
+		display: block;
+	}
+	&::after {
+		content: "";
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		border-radius: 50%;
+		background-color: rgba(255, 255, 255, 0);
+		transition: .2s;
+	}
+	&:hover::after { background-color: rgba(255, 255, 255, 0.1); }
+	&:active::after { background-color: rgba(255, 255, 255, 0.2); }
+}
+
 html, body {
 	width: 100%;
 	height: 100%;
@@ -40,7 +68,6 @@ input, textarea, button {
 
 button {
 	text-transform: uppercase;
-	opacity: 0.6;
 	font-weight: 900;
 	cursor: pointer;
 }
@@ -61,43 +88,43 @@ section {
 }
 
 [data-tooltip] {
-	position: relative;
 	&::after {
 		content: attr(data-tooltip);
 		position: absolute;
-		bottom: 100%;
-		left: 0;
+		bottom: 50%;
+		left: 100%;
 		display: block;
 		padding: 6px 12px;
 		border-radius: 4px;
 		background-color: #282828;
 		white-space: nowrap;
-		transform: translateY(-6px);
+		transform: translate(2px, 50%);
 		pointer-events: none;
 		opacity: 0;
 		font-weight: 400;
+		font-family: Roboto, arial, sans-serif;
 		color: $subtleText;
 		transition: .2s;
 	}
 	&::before {
 		content: "";
 		position: absolute;
-		bottom: 100%;
-		left: 50%;
-		border: 12px solid transparent;
-		border-top-color: #282828;
-		border-bottom-width: 0;
-		transform: translate(-50%, 6px);
+		bottom: 50%;
+		left: 100%;
+		border: 8px solid transparent;
+		border-right-color: #282828;
+		border-left-width: 0;
+		transform: translate(-6px, 50%);
 		opacity: 0;
 		transition: .2s;
 		pointer-events: none;
 	}
 	&:hover::after{
-		transform: translateY(-18px);
+		transform: translate(8px, 50%);
 		opacity: 1;
 	}
 	&:hover::before{
-		transform: translate(-50%, -6px);
+		transform: translateY(50%);
 		opacity: 1;
 	}
 }
@@ -105,9 +132,12 @@ section {
 #text-editor {
 	transition: opacity .15s linear;
 	height: 100%;
+	overflow: auto;
 	textarea {
+		--scroll-height: 50vh;
 		width: 100%;
-		min-height: 100%;
+		display: block;
+		height: max(100vh, calc(50vh + var(--scroll-height)));
 		padding: 2em;
 		overflow: hidden;
 		box-sizing: border-box;
@@ -155,11 +185,8 @@ body:not(.visual-editor) #visual-editor * {
 		opacity: 1;
 		transform: none;
 	}
-	#peek-commands {
-		opacity: 1;
-		transform: translateY(-50%);
-		transition: opacity .3s .2s,
-			transform .3s .2s;
+	#edit-actions:not([hidden]){
+		transform: none;
 	}
 }
 
@@ -170,28 +197,8 @@ body:not(.visual-editor) #visual-editor * {
 	transform: translateY(-100%);
 	transition: none;
 	padding: 6px;
-	button {
-		padding: 12px;
-		position: relative;
-		svg {
-			width: 24px;
-			height: 24px;
-			display: block;
-		}
-		&::after {
-			content: "";
-			position: absolute;
-			width: 100%;
-			height: 100%;
-			top: 0;
-			left: 0;
-			border-radius: 50%;
-			background-color: rgba(255, 255, 255, 0);
-			transition: .2s;
-		}
-		&:hover::after { background-color: rgba(255, 255, 255, 0.1); }
-		&:active::after { background-color: rgba(255, 255, 255, 0.2); }
-	}	
+	display: flex;
+	button { @include iconButton; }	
 }
 
 #error.shown, #error:hover {
@@ -260,7 +267,19 @@ body:not(.visual-editor) #visual-editor * {
 	//&.active + circle:not(:hover) { fill: $nextBubbleColor; }
 }
 
-#bubble-info, #bubble-info.hidden {
+#mouse-coordinates {
+	position: absolute;
+	pointer-events: none;
+	display: block;
+	padding: 0 6px;
+	bottom: 0;
+	color: $subtleText;
+}
+
+#mouse-coordinates[hidden]{ opacity: 0; }
+#mouse-coordinates.right { right: 0; }
+
+#bubble-info, #bubble-info[hidden] {
 	position: absolute;
 	bottom: 0;
 	left: 0;
@@ -304,52 +323,6 @@ body:not(.visual-editor) #visual-editor * {
 	}
 }
 
-#peek-commands, #peek-commands.hidden {
-	display: flex;
-	flex-direction: column;
-	list-style: none;
-	background-color: #282828;
-	position: absolute;
-	left: 0;
-	top: 50%;
-	transform: translate(-100%, -50%);
-	padding: 12px 0;
-	color: $subtleText;
-	border-radius: 0 12px 12px 0;
-	margin: 0;
-	width: 48px;
-	opacity: 0;
-	transition: .2s;
-	li {
-		height: 36px;
-		line-height: 36px;
-		text-align: center;
-		position: relative;
-		cursor: pointer;
-		transition: .2s;
-		&::after{
-			content: "";
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			width: 36px;
-			height: 36px;
-			transform: scale(0.9) translate(-50%, -50%);
-			border-radius: 50%;
-			background-color: rgba(255, 255, 255, 0.1);
-			opacity: 0;
-			transition: .2s;
-		}
-		&.selected {
-			color: $normalText;
-			&::after{
-				transform: translate(-50%, -50%);
-				opacity: 1;
-			}
-		}
-	}
-}
-
 .terminal #terminal {
 	left: 0;
 	opacity: 1;
@@ -385,10 +358,72 @@ body:not(.visual-editor) #visual-editor * {
 	}
 	input {
 		position: absolute;
+		font-family: monospace;
 		bottom: 0;
 		left: 0;
 		height: 2em;
 		width: 100%;
 		padding: 0 0 0 3ch;
 	}
+}
+
+#edit-actions {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 48px;
+	padding: 6px;
+	display: block;
+	transition: .3s;
+	transform: translateX(100%);
+}
+
+#insert-command {
+	list-style: none;
+	margin: 0 0 10px 0;
+	padding: 0 0 6px;
+	position: relative;
+	li { @include iconButton; }
+}
+
+#remove-command {
+	@include iconButton;
+}
+
+#remove-command:hover, #remove-path:hover{
+	color: $errorColor;
+}
+
+#remove-command::before {
+	content: "";
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	width: 80%;
+	height: 4px;
+	border-radius: 2px;
+	background-color: #282828;
+	transform: translate(-50%, -6px);
+	transition: .2s;
+}
+
+#remove-path, #remove-command{
+	transition: .2s;
+	display: block;
+	transform: none;
+}
+
+#remove-path[hidden]{
+	transform: translateY(-24px);
+	opacity: 0;
+}
+
+#remove-command[hidden]{
+	transform: translateX(24px);
+	opacity: 0;
+}
+
+#remove-command[hidden]::before {
+	transform: translateX(-24px) translate(-50%, -6px);
+	opacity: 0;
 }

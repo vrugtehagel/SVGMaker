@@ -13,7 +13,7 @@ current = {
 	save: function(){
 		const text = current.getSVGAsText();
 		localStorage.SVGMaker = text;
-		history.unshift(text);
+		current.history.unshift(text);
 		let totalLength = current.history.reduce((acc, cur) => acc + cur.length, 0);
 		while(totalLength > options.maxHistoryMemory) totalLength -= current.history.pop().length;
 	},

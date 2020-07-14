@@ -1,33 +1,41 @@
 html, body {
   width: 100%;
-  height: 100%; }
+  height: 100%;
+}
 
 body {
   margin: 0;
   color: rgba(255, 255, 255, 0.6);
-  font: 18px / 1.5 monospace;
-  background-color: #181818; }
+  font: 18px/1.5 monospace;
+  background-color: #181818;
+}
 
 ::-webkit-scrollbar {
   height: 4px;
-  width: 4px; }
+  width: 4px;
+}
 
 ::-webkit-scrollbar-track {
-  background-color: transparent; }
+  background-color: transparent;
+}
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(128, 128, 128, 0.2); }
+  background-color: rgba(128, 128, 128, 0.2);
+}
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(128, 128, 128, 0.4);
-  cursor: default; }
+  cursor: default;
+}
 
 ::-webkit-scrollbar-corner {
-  background: rgba(128, 128, 128, 0.2); }
+  background: rgba(128, 128, 128, 0.2);
+}
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(128, 128, 128, 0.2) transparent; }
+  scrollbar-color: rgba(128, 128, 128, 0.2) transparent;
+}
 
 input, textarea, button {
   letter-spacing: -0.05ch;
@@ -36,13 +44,14 @@ input, textarea, button {
   background: none;
   border: none;
   outline: none;
-  border-radius: 4px; }
+  border-radius: 4px;
+}
 
 button {
   text-transform: uppercase;
-  opacity: 0.6;
   font-weight: 900;
-  cursor: pointer; }
+  cursor: pointer;
+}
 
 section {
   position: fixed;
@@ -51,97 +60,114 @@ section {
   bottom: 0;
   right: 0;
   background-color: #202020;
-  overflow: hidden; }
+  overflow: hidden;
+}
 
 ::selection {
   color: rgba(0, 0, 0, 0.7);
-  background-color: white; }
+  background-color: white;
+}
 
-[data-tooltip] {
-  position: relative; }
-  [data-tooltip]::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 0;
-    display: block;
-    padding: 6px 12px;
-    border-radius: 4px;
-    background-color: #282828;
-    white-space: nowrap;
-    transform: translateY(-6px);
-    pointer-events: none;
-    opacity: 0;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.4);
-    transition: .2s; }
-  [data-tooltip]::before {
-    content: "";
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    border: 12px solid transparent;
-    border-top-color: #282828;
-    border-bottom-width: 0;
-    transform: translate(-50%, 6px);
-    opacity: 0;
-    transition: .2s;
-    pointer-events: none; }
-  [data-tooltip]:hover::after {
-    transform: translateY(-18px);
-    opacity: 1; }
-  [data-tooltip]:hover::before {
-    transform: translate(-50%, -6px);
-    opacity: 1; }
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 50%;
+  left: 100%;
+  display: block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background-color: #282828;
+  white-space: nowrap;
+  transform: translate(2px, 50%);
+  pointer-events: none;
+  opacity: 0;
+  font-weight: 400;
+  font-family: Roboto, arial, sans-serif;
+  color: rgba(255, 255, 255, 0.4);
+  transition: 0.2s;
+}
+[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  bottom: 50%;
+  left: 100%;
+  border: 8px solid transparent;
+  border-right-color: #282828;
+  border-left-width: 0;
+  transform: translate(-6px, 50%);
+  opacity: 0;
+  transition: 0.2s;
+  pointer-events: none;
+}
+[data-tooltip]:hover::after {
+  transform: translate(8px, 50%);
+  opacity: 1;
+}
+[data-tooltip]:hover::before {
+  transform: translateY(50%);
+  opacity: 1;
+}
 
 #text-editor {
-  transition: opacity .15s linear;
-  height: 100%; }
-  #text-editor textarea {
-    width: 100%;
-    min-height: 100%;
-    padding: 2em;
-    overflow: hidden;
-    box-sizing: border-box;
-    background: none;
-    border: none;
-    color: inherit;
-    font-size: .8em; }
-    #text-editor textarea::-webkit-scrollbar {
-      height: 0;
-      width: 0; }
+  transition: opacity 0.15s linear;
+  height: 100%;
+  overflow: auto;
+}
+#text-editor textarea {
+  --scroll-height: 50vh;
+  width: 100%;
+  display: block;
+  height: max(100vh, calc(50vh + var(--scroll-height)));
+  padding: 2em;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 0.8em;
+}
+#text-editor textarea::-webkit-scrollbar {
+  height: 0;
+  width: 0;
+}
 
 #visual-editor {
-  transition: width .3s, height .3s, right .3s, bottom .3s;
+  transition: width 0.3s, height 0.3s, right 0.3s, bottom 0.3s;
   border: 12px solid #303030;
   border-radius: 12px 0 0 0;
   width: 40%;
   height: 40%;
-  cursor: pointer; }
+  cursor: pointer;
+}
 
 body:not(.visual-editor) #visual-editor * {
-  pointer-events: none; }
+  pointer-events: none;
+}
 
 .visual-editor #text-editor {
-  opacity: 0; }
-  .visual-editor #text-editor::after {
-    content: none; }
+  opacity: 0;
+}
+.visual-editor #text-editor::after {
+  content: none;
+}
 .visual-editor #visual-editor {
   right: -12px;
   bottom: -12px;
   width: 100%;
   height: 100vh;
-  cursor: initial; }
+  cursor: initial;
+}
 .visual-editor #actions {
   transform: none;
-  transition: transform .2s .2s; }
+  transition: transform 0.2s 0.2s;
+}
 .visual-editor #bubble-info {
   opacity: 1;
-  transform: none; }
-.visual-editor #peek-commands {
-  opacity: 1;
-  transform: translateY(-50%);
-  transition: opacity .3s .2s, transform .3s .2s; }
+  transform: none;
+}
+.visual-editor #edit-actions:not([hidden]) {
+  transform: none;
+}
 
 #actions {
   position: absolute;
@@ -149,33 +175,46 @@ body:not(.visual-editor) #visual-editor * {
   left: 0;
   transform: translateY(-100%);
   transition: none;
-  padding: 6px; }
-  #actions button {
-    padding: 12px;
-    position: relative; }
-    #actions button svg {
-      width: 24px;
-      height: 24px;
-      display: block; }
-    #actions button::after {
-      content: "";
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0);
-      transition: .2s; }
-    #actions button:hover::after {
-      background-color: rgba(255, 255, 255, 0.1); }
-    #actions button:active::after {
-      background-color: rgba(255, 255, 255, 0.2); }
+  padding: 6px;
+  display: flex;
+}
+#actions button {
+  width: 24px;
+  height: 24px;
+  box-sizing: content-box;
+  cursor: pointer;
+  padding: 12px;
+  position: relative;
+  opacity: 0.6;
+}
+#actions button svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+#actions button::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0);
+  transition: 0.2s;
+}
+#actions button:hover::after {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+#actions button:active::after {
+  background-color: rgba(255, 255, 255, 0.2);
+}
 
 #error.shown, #error:hover {
   opacity: 1;
   pointer-events: initial;
-  transform: none; }
+  transform: none;
+}
 
 #error {
   width: calc(100% - 48px);
@@ -184,14 +223,15 @@ body:not(.visual-editor) #visual-editor * {
   bottom: 24px;
   left: 24px;
   color: tomato;
-  transition: .4s;
+  transition: 0.4s;
   cursor: pointer;
   padding: 12px 24px;
   border-radius: 8px;
   background-color: #303030;
   transform: translateY(36px);
   opacity: 0;
-  pointer-events: none; }
+  pointer-events: none;
+}
 
 #preview {
   position: absolute;
@@ -200,39 +240,65 @@ body:not(.visual-editor) #visual-editor * {
   top: 50%;
   --aspect-ratio: 1;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05); }
-  #preview svg {
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%; }
-  #preview::after {
-    content: "";
-    display: block;
-    width: 100%;
-    pointer-events: none;
-    padding-bottom: calc(var(--aspect-ratio) * 100%); }
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+}
+#preview svg {
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+#preview::after {
+  content: "";
+  display: block;
+  width: 100%;
+  pointer-events: none;
+  padding-bottom: calc(var(--aspect-ratio) * 100%);
+}
 
 #preview.svg-overflow-visible svg:first-child {
-  overflow: visible; }
+  overflow: visible;
+}
 
 #bubbles {
   overflow: visible;
-  pointer-events: none; }
-  #bubbles * {
-    pointer-events: initial; }
+  pointer-events: none;
+}
+#bubbles * {
+  pointer-events: initial;
+}
 
 #bubbles circle {
   fill: rgba(255, 255, 255, 0.3);
-  transition: fill .2s; }
-  #bubbles circle:hover {
-    fill: rgba(255, 255, 255, 0.9); }
-  #bubbles circle.active {
-    fill: rgba(255, 255, 255, 0.9); }
+  transition: fill 0.2s;
+}
+#bubbles circle:hover {
+  fill: rgba(255, 255, 255, 0.9);
+}
+#bubbles circle.active {
+  fill: rgba(255, 255, 255, 0.9);
+}
 
-#bubble-info, #bubble-info.hidden {
+#mouse-coordinates {
+  position: absolute;
+  pointer-events: none;
+  display: block;
+  padding: 0 6px;
+  bottom: 0;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+#mouse-coordinates[hidden] {
+  opacity: 0;
+}
+
+#mouse-coordinates.right {
+  right: 0;
+}
+
+#bubble-info, #bubble-info[hidden] {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -242,7 +308,8 @@ body:not(.visual-editor) #visual-editor * {
   flex-direction: row;
   transform: translateY(100%);
   opacity: 0;
-  transition: opacity .15s 0s, transform .15s 0s; }
+  transition: opacity 0.15s 0s, transform 0.15s 0s;
+}
 
 #bubble-command {
   display: inline-block;
@@ -252,103 +319,192 @@ body:not(.visual-editor) #visual-editor * {
   text-align: center;
   padding: 6px 12px;
   font-weight: 900;
-  cursor: pointer; }
+  cursor: pointer;
+}
 
 #bubble-options {
   display: flex;
   flex-direction: row;
   padding: 0;
   margin: 0;
-  list-style: none; }
-  #bubble-options li {
-    margin-left: 6px; }
-  #bubble-options input {
-    background-color: #282828;
-    padding: 6px 12px;
-    box-sizing: content-box;
-    width: 3ch;
-    text-align: center;
-    line-height: inherit;
-    color: rgba(255, 255, 255, 0.4); }
-
-#peek-commands, #peek-commands.hidden {
-  display: flex;
-  flex-direction: column;
   list-style: none;
+}
+#bubble-options li {
+  margin-left: 6px;
+}
+#bubble-options input {
   background-color: #282828;
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translate(-100%, -50%);
-  padding: 12px 0;
+  padding: 6px 12px;
+  box-sizing: content-box;
+  width: 3ch;
+  text-align: center;
+  line-height: inherit;
   color: rgba(255, 255, 255, 0.4);
-  border-radius: 0 12px 12px 0;
-  margin: 0;
-  width: 48px;
-  opacity: 0;
-  transition: .2s; }
-  #peek-commands li, #peek-commands.hidden li {
-    height: 36px;
-    line-height: 36px;
-    text-align: center;
-    position: relative;
-    cursor: pointer;
-    transition: .2s; }
-    #peek-commands li::after, #peek-commands.hidden li::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 36px;
-      height: 36px;
-      transform: scale(0.9) translate(-50%, -50%);
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.1);
-      opacity: 0;
-      transition: .2s; }
-    #peek-commands li.selected, #peek-commands.hidden li.selected {
-      color: rgba(255, 255, 255, 0.6); }
-      #peek-commands li.selected::after, #peek-commands.hidden li.selected::after {
-        transform: translate(-50%, -50%);
-        opacity: 1; }
+}
 
 .terminal #terminal {
   left: 0;
   opacity: 1;
-  transition: opacity .3s, left 0s; }
+  transition: opacity 0.3s, left 0s;
+}
 
 #terminal {
   background-color: #101010;
   color: rgba(255, 255, 255, 0.6);
   left: 100vw;
   opacity: 0;
-  transition: opacity .3s, left 0s .3s;
-  cursor: text; }
-  #terminal .error {
-    color: tomato; }
-  #terminal pre {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    flex: 1;
-    margin: 0;
-    padding: 0 0 2em 0;
-    box-sizing: border-box;
-    white-space: pre-wrap; }
-    #terminal pre::after {
-      line-height: 2;
-      content: " > ";
-      position: absolute;
-      left: 0;
-      bottom: 0; }
-  #terminal input {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2em;
-    width: 100%;
-    padding: 0 0 0 3ch; }
+  transition: opacity 0.3s, left 0s 0.3s;
+  cursor: text;
+}
+#terminal .error {
+  color: tomato;
+}
+#terminal pre {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  flex: 1;
+  margin: 0;
+  padding: 0 0 2em 0;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+}
+#terminal pre::after {
+  line-height: 2;
+  content: " > ";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+#terminal input {
+  position: absolute;
+  font-family: monospace;
+  bottom: 0;
+  left: 0;
+  height: 2em;
+  width: 100%;
+  padding: 0 0 0 3ch;
+}
+
+#edit-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 48px;
+  padding: 6px;
+  display: block;
+  transition: 0.3s;
+  transform: translateX(100%);
+}
+
+#insert-command {
+  list-style: none;
+  margin: 0 0 10px 0;
+  padding: 0 0 6px;
+  position: relative;
+}
+#insert-command li {
+  width: 24px;
+  height: 24px;
+  box-sizing: content-box;
+  cursor: pointer;
+  padding: 12px;
+  position: relative;
+  opacity: 0.6;
+}
+#insert-command li svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+#insert-command li::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0);
+  transition: 0.2s;
+}
+#insert-command li:hover::after {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+#insert-command li:active::after {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#remove-command {
+  width: 24px;
+  height: 24px;
+  box-sizing: content-box;
+  cursor: pointer;
+  padding: 12px;
+  position: relative;
+  opacity: 0.6;
+}
+#remove-command svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+#remove-command::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0);
+  transition: 0.2s;
+}
+#remove-command:hover::after {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+#remove-command:active::after {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#remove-command:hover, #remove-path:hover {
+  color: tomato;
+}
+
+#remove-command::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 80%;
+  height: 4px;
+  border-radius: 2px;
+  background-color: #282828;
+  transform: translate(-50%, -6px);
+  transition: 0.2s;
+}
+
+#remove-path, #remove-command {
+  transition: 0.2s;
+  display: block;
+  transform: none;
+}
+
+#remove-path[hidden] {
+  transform: translateY(-24px);
+  opacity: 0;
+}
+
+#remove-command[hidden] {
+  transform: translateX(24px);
+  opacity: 0;
+}
+
+#remove-command[hidden]::before {
+  transform: translateX(-24px) translate(-50%, -6px);
+  opacity: 0;
+}
 
 /*# sourceMappingURL=general.css.map */

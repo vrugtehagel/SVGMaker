@@ -115,12 +115,12 @@ const terminal = {
 					else if(value == 'false') value = false;
 					else if(value == +value) value = +value;
 					if(options[option] === undefined) terminal.error(`option "${option}" does not exist`);
-					else options[option] = value;
+					else options.set(option, value);
 					return;
 				}
 				if(action == '' || action === undefined){
-					for(const option in options){
-						const value = options[option];
+					for(const [option, value] of Object.entries(options)){
+						if(typeof value == 'function') continue;
 						terminal.write(option.padEnd(50, ' ') + value);
 					}
 					return;

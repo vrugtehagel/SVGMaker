@@ -1,8 +1,5 @@
 const UI = {
 	dragging: false,
-	get preventMouseDown(){
-		return UI.dragging;
-	},
 	setup: function(){
 		// set events to swapTo a different editor
 		(() => {
@@ -41,11 +38,25 @@ const UI = {
 			});
 		})();
 
+		// resize text-editor's textarea when overflow occurs
+		(() => {
+			const textEditor = document.getElementById('text-editor');
+			const textarea = document.querySelector('textarea');
+			let timeoutID;
+			textarea.addEventListener('input', () => {
+				const scrollTop = textEditor.scrollTop;
+				textarea.style.setProperty('--scroll-height', '0');
+				textarea.style.setProperty('--scroll-height', textarea.scrollHeight + 'px');
+				textEditor.scrollTo(0, scrollTop);
+			});
+		})();
+
 		// setup UI.drag
 		(() => {
 			document.addEventListener('mousemove', event => {
 				if(!UI.dragging) return;
 				if(!UI.dragging.mousemove) return;
+				event.preventDefault();
 				const {x, y} = UI.getPositionInSVG(event.clientX, event.clientY);
 				mx = UI.dragging.mouse.x;
 				my = UI.dragging.mouse.y;
@@ -136,8 +147,13 @@ const UI = {
 		// set keyboard shortcuts
 		(() => {
 			document.addEventListener('keydown', event => {
-				if(event.key == 'Delete'){
-					if(current.activeElement && current.activeBubble) UI.bubbles.remove();
+				const key = event.key;
+				if(key == 'Delete' || (event.altKey && key == 'Backspace')){
+					if(current.activeBubble) UI.bubbles.remove();
+					else if(current.activeElement) UI.paths.remove();
+				}
+				if(Path.commands.hasOwnProperty(key.toUpperCase())){
+					if(current.activeBubble) UI.bubbles.insert(key.toUpperCase());
 				}
 			});
 		})();
@@ -146,10 +162,9 @@ const UI = {
 		(() => {
 			const visualEditor = document.getElementById('visual-editor');
 			visualEditor.addEventListener('mousedown', event => {
-				if(event.target == visualEditor || event.target == current.SVG){
-					if(UI.preventMouseDown) return;
-					UI.select(null);
-				}
+				if(UI.dragging) return;
+				if(event.target == visualEditor || event.target == current.SVG) UI.select(null);
+				else if(current.SVG.contains(event.target)) UI.select(event.target);
 			});
 		})();
 
@@ -166,6 +181,53 @@ const UI = {
 				else bubbleCommand.textContent = item.command.toLowerCase();
 			});
 		})();
+
+		// set insert-bubble and remove-bubble functionality
+		(() => {
+			const insertButtons = document.getElementById('insert-command').children;
+			for(const insertButton of insertButtons){
+				insertButton.addEventListener('click', () => {
+					const command = insertButton.getAttribute('data-insert');
+					UI.bubbles.insert(command);
+				});
+			}
+
+			const removeButton = document.getElementById('remove-command');
+			removeButton.addEventListener('click', () => {
+				UI.bubbles.remove();
+			});
+		})();
+
+		// set the action buttons (other than the swap editor one)
+		(() => {
+			const actionButtons = document.querySelectorAll('#actions button[data-action]');
+			for(const button of actionButtons){
+				button.addEventListener('click', () => {
+					const action = button.getAttribute('data-action');
+					if(UI.paths[action]) UI.paths[action]();
+				});
+			}
+		})();
+
+		// set coordinates on mouseover
+		(() => {
+			const visualEditor = document.getElementById('visual-editor');
+			const span = document.getElementById('mouse-coordinates');
+			document.addEventListener('mousemove', event => {
+				const {x, y} = UI.getPositionInSVG(event.clientX, event.clientY);
+				UI.setMouseCoordinates(x, y);
+			});
+		})();
+
+		// set title attribute on the insert command buttons
+		(() => {
+			const buttons = document.getElementById('insert-command').children;
+			for(const button of buttons){
+				const command = button.getAttribute('data-insert');
+				const description = Path.commandDescriptions[command];
+				button.setAttribute('title', description);
+			}
+		})();
 	},
 	swapTo: function(editor){
 		const textarea = document.querySelector('#text-editor textarea');
@@ -174,7 +236,6 @@ const UI = {
 
 		body.classList.remove('visual-editor');
 		body.classList.remove('terminal');
-		preview.classList.toggle('svg-overflow-visible', options.SVGOverflowVisible);
 
 		if(editor == 'text'){
 			const bubbles = document.getElementById('bubbles');
@@ -186,29 +247,8 @@ const UI = {
 			catch(error){ return UI.throwError(error); }
 			body.classList.add('visual-editor');
 
-			// set the bubbles size
-			(() => {
-				const {width, height} = current.size;
-				bubbles.setAttribute('viewBox', `0 0 ${width} ${height}`);
-			})();
-
-			// load SVG element event handlers
-			(() => {
-				for(const path of current.SVG.querySelectorAll('path')){
-					UI.drag({
-						element: path,
-						button: LEFT_MOUSE_BUTTON,
-						mousedown: event => {
-							UI.select(path);
-						},
-						mousemove: event => {
-							const {dx, dy} = UI.dragging.mouse;
-							current.activeElement.moveBy(dx, dy);
-							UI.bubbles.moveAllBy(dx, dy)
-						}
-					});
-				}
-			})();
+			bubbles.setAttribute('viewBox', `0 0 ${current.size.width} ${current.size.height}`);
+			for(const path of current.SVG.querySelectorAll('path')) UI.paths.setDrag(path);
 		}
 		else if(editor == 'terminal'){
 			body.classList.add('terminal');
@@ -254,18 +294,42 @@ const UI = {
 			y: snap((y - (rect.top || rect.y)) / rect.height * size.height)
 		};
 	},
+	setMouseCoordinates: function(x, y){
+		if(!UI.setMouseCoordinates.element) UI.setMouseCoordinates.element = document.getElementById('mouse-coordinates');
+		const span = UI.setMouseCoordinates.element;
+		if(!current.activeElement || x == null){
+			span.textContent = '';
+			span.setAttribute('hidden', '');
+		}
+		else {
+			span.textContent = `(${x}, ${y})`;
+			span.removeAttribute('hidden');
+			span.classList.toggle('right', current.size.width / 2 > x);
+		}
+	},
+	toggleTitleAttributes: function(bool){
+		if(bool === undefined) bool = !document.querySelector('[title]');
+		if(bool){
+			const titleElements = document.querySelectorAll('[data-title]');
+			for(const titleElement of titleElements){
+				const title = titleElement.getAttribute('data-title');
+				titleElement.setAttribute('title', title);
+				titleElement.removeAttribute('data-title');
+			}
+		}
+		else{
+			const titleElements = document.querySelectorAll('[title]');
+			for(const titleElement of titleElements){
+				const title = titleElement.getAttribute('title');
+				titleElement.setAttribute('data-title', title);
+				titleElement.removeAttribute('title');
+			}
+		}
+	},
 	select: function(element){
-		if(!element){
-			current.activeElement = null;
-			UI.bubbles.removeAll();
-			return;
-		}
-		if(element.tagName == 'path'){
-			current.activeElement = new Path(element);
-			UI.bubbles.createAll();
-			return;
-		}
-		current.activeElement = null;
+		if(!element) return UI.paths.select(null);
+		if(element.tagName == 'path') return UI.paths.select(element);
+		UI.select(null);
 	},
 	bubbles: {
 		createAll: function(){
@@ -296,7 +360,7 @@ const UI = {
 			const bubbles = document.getElementById('bubbles');
 			while(bubbles.firstChild) bubbles.removeChild(bubbles.lastChild);
 			current.bubbles = [];
-			current.activeBubble = null;
+			UI.bubbles.select(null);
 			UI.bubbles.setInfo();
 		},
 		create: function(point){
@@ -313,6 +377,7 @@ const UI = {
 			UI.bubbles.setDrag(point);
 		},
 		remove: function(){
+			if(!current.activeBubble) return;
 			const circle = current.activeBubble;
 			const id = current.bubbles.indexOf(circle);
 			if(id == 0) return UI.throwError('Cannot remove the first command');
@@ -335,19 +400,34 @@ const UI = {
 			}
 		},
 		select: function(element){
+			const editActions = document.getElementById('edit-actions');
+			const removeButton = document.getElementById('remove-command');
 			for(const circle of current.bubbles) circle.classList.remove('active');
 			current.activeBubble = element;
 			UI.bubbles.setInfo();
-			if(current.activeBubble) current.activeBubble.classList.add('active');
+			if(current.activeBubble){
+				current.activeBubble.classList.add('active');
+				editActions.removeAttribute('hidden', '');
+				console.log(current.bubbles, current.activeBubble, current.bubbles.indexOf(current.activeBubble));
+				if(current.bubbles.indexOf(current.activeBubble) == 0){
+					removeButton.setAttribute('hidden', '');
+				}
+				else{
+					removeButton.removeAttribute('hidden');
+				}
+			}
+			else{
+				editActions.setAttribute('hidden', '');
+			}
 		},
 		setInfo: function(){
 			const bubbleInfo = document.getElementById('bubble-info');
 			const bubbleCommand = document.getElementById('bubble-command');
 			const bubbleOptions = document.getElementById('bubble-options');
 			const circle = current.activeBubble;
+			if(!circle) return bubbleInfo.setAttribute('hidden', '');
 			bubbleOptions.empty();
-			if(!circle) return bubbleInfo.classList.add('hidden');
-			bubbleInfo.classList.remove('hidden');
+			bubbleInfo.removeAttribute('hidden');
 			const id = current.bubbles.indexOf(circle);
 			const item = current.activeElement.getItemByPoint(id);
 			const index = item.index;
@@ -386,6 +466,7 @@ const UI = {
 			});
 		},
 		insert: function(command){
+			if(!current.activeBubble) return;
 			const circle = current.activeBubble;
 			const id = current.bubbles.indexOf(circle);
 			const oldPoints = current.activeElement.getPoints();
@@ -403,7 +484,11 @@ const UI = {
 			}
 			const dragObj = i => {
 				if(!pointsToPlace[i]){
+					if(i == 0) return false;
+					const point = pointsToPlace[i - 1];
+					const circle = current.bubbles[point.id];
 					pointsToPlace.forEach(point => UI.bubbles.setDrag(point));
+					UI.bubbles.select(circle);
 					return false;
 				}
 				const point = pointsToPlace[i];
@@ -431,6 +516,70 @@ const UI = {
 			}
 			UI.dragging = dragObj(0);
 			//UI.bubbles.select(current.bubbles[point.id]);
+		}
+	},
+	paths: {
+		setDrag: function(path){
+			UI.drag({
+				element: path,
+				button: LEFT_MOUSE_BUTTON,
+				mousedown: event => {
+					UI.paths.select(path);
+					const {x, y} = UI.getPositionInSVG(event.clientX, event.clientY);
+					UI.setMouseCoordinates(x, y);
+				},
+				mousemove: event => {
+					const {dx, dy} = UI.dragging.mouse;
+					current.activeElement.moveBy(dx, dy);
+					UI.bubbles.moveAllBy(dx, dy)
+				}
+			});
+		},
+		add: function(){
+			const NS = 'http://www.w3.org/2000/svg';
+			const path = document.createElementNS(NS, 'path');
+			path.setAttribute('d', 'M0 0');
+			path.setAttribute('style', options.defaultPathStyle);
+			current.SVG.appendChild(path);
+			UI.paths.select(path);
+			UI.paths.setDrag(path);
+		},
+		select: function(element){
+			const removeButton = document.getElementById('remove-path');
+			if(!element){
+				current.activeElement = null;
+				UI.setMouseCoordinates(null);
+				UI.bubbles.removeAll();
+				removeButton.setAttribute('hidden', '');
+				return;
+			}
+			current.activeElement = new Path(element);
+			UI.bubbles.createAll();
+			removeButton.removeAttribute('hidden');
+		},
+		selectPrevious: function(){
+			const paths = Array.from(current.SVG.querySelectorAll('path'));
+			let index = paths.indexOf(current.activeElement?.element);
+			if(index < 1) index = paths.length - 1;
+			else index--;
+			UI.paths.select(paths[index]);
+		},
+		selectNext: function(){
+			const paths = Array.from(current.SVG.querySelectorAll('path'));
+			let index = paths.indexOf(current.activeElement?.element);
+			if(index == paths.length - 1) index = 0;
+			else index++;
+			UI.paths.select(paths[index]);
+		},
+		remove: function(){
+			if(!current.activeElement) return;
+			const path = current.activeElement.element;
+			const paths = Array.from(current.SVG.querySelectorAll('path'));
+			let index = paths.indexOf(current.activeElement.element);
+			if(index == paths.length - 1) index--;
+			else index++;
+			UI.paths.select(paths[index]);
+			path.remove();
 		}
 	}
 };
