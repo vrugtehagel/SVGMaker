@@ -241,7 +241,17 @@ const terminal = {
 				terminal.write('result has been added to the <defs> of your SVG');
 			},
 			description: 'creates an SVG filter for a drop shadow',
-			syntax: [['create_shadow [x] [y] [blur] [color]']]
+			syntax: [['create_shadow [x] [y] [blur] [color]', 'creates SVG filter with given parameters']]
+		},
+		'set_background': {
+			action: function(args){
+				const CSS = [...arguments].join(' ');
+			},
+			description: 'sets a background image behind the preview',
+			syntax: [
+				['set_background [options]', 'set background with options to pass on to the background CSS property'],
+				['set_background', 'set background with default options ("50% 50% / contain")']
+			]
 		}
 	}
 }
