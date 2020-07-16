@@ -533,7 +533,7 @@ const UI = {
 			}
 		},
 		setInfo: function(){
-			if(current.activeElement?.tagName != 'path') return;
+			if(current.activeElement?.type != 'path') return;
 			const bubbleInfo = document.getElementById('bubble-info');
 			const bubbleCommand = document.getElementById('bubble-command');
 			const bubbleOptions = document.getElementById('bubble-options');
