@@ -151,6 +151,7 @@ const UI = {
 			document.addEventListener('keydown', event => {
 				const key = event.key.toUpperCase();
 				if(key == 'DELETE' || (event.altKey && key == 'BACKSPACE')){
+					if(current.activeElement?.type != 'path') return;
 					if(current.activeBubble) UI.bubbles.remove();
 					else if(current.activeElement) UI.SVG.remove();
 				}
