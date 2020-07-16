@@ -43,12 +43,16 @@ const UI = {
 		(() => {
 			const textEditor = document.getElementById('text-editor');
 			let timeoutID;
-			UI._textarea.addEventListener('input', () => {
+			let resize = () => {
+				const vh = window.innerHeight;
 				const scrollTop = textEditor.scrollTop;
-				UI._textarea.style.setProperty('--scroll-height', '0');
-				UI._textarea.style.setProperty('--scroll-height', UI._textarea.scrollHeight + 'px');
+				UI._textarea.style.height = '0px';
+				const newHeight = .5 * vh + UI._textarea.scrollHeight;
+				UI._textarea.style.height = Math.max(vh, newHeight) + 'px';
 				textEditor.scrollTo(0, scrollTop);
-			});
+			};
+			resize();
+			UI._textarea.addEventListener('input', resize);
 		})();
 
 		// setup UI.drag

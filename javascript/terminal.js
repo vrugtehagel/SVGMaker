@@ -245,12 +245,28 @@ const terminal = {
 		},
 		'set_background': {
 			action: function(args){
-				const CSS = [...arguments].join(' ');
+				const preview = document.getElementById('preview');
+				const CSS = [...arguments].join(' ') || '50% 50% / contain no-repeat';
+				if(args == 'none') return preview.style.background = 'none';
+				const input = document.createElement('input');
+				input.setAttribute('type', 'file');
+				input.setAttribute('accept', 'image/*');
+				input.addEventListener('change', () => {
+					const file = input.files[0];
+					if(!file) return terminal.error('No file chosen');
+					const reader = new FileReader();
+					reader.addEventListener('load', () => {
+						preview.style.background = `url(${reader.result}) ${CSS}`;
+					});
+					reader.readAsDataURL(file);
+				});
+				input.click();
 			},
 			description: 'sets a background image behind the preview',
 			syntax: [
+				['set_background none', 'remove background'],
 				['set_background [options]', 'set background with options to pass on to the background CSS property'],
-				['set_background', 'set background with default options ("50% 50% / contain")']
+				['set_background', 'set background with default options ("50% 50% / contain no-repeat")']
 			]
 		}
 	}
