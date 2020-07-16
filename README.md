@@ -13,7 +13,7 @@ It does this by offering a basic text editor and accompanying it with the follow
 
 ## Current todo
  - add styling functionality/attribute functionality
- - add functionality for ellipse, line, ?polyline, ?polygon
+ - add functionality for ellipse, line, ?text, ?polyline, ?polygon
 
 ## Future todo
  - improve text editor (syntax highlighting, indentation-related functionality)
