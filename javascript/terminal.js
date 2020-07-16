@@ -114,6 +114,7 @@ const terminal = {
 					if(value == 'true') value = true;
 					else if(value == 'false') value = false;
 					else if(value == +value) value = +value;
+					else if(value[0] == '"' && value.slice(-1) == '"') value = JSON.parse(`{"s":${value}}`).s;
 					if(options[option] === undefined) terminal.error(`option "${option}" does not exist`);
 					else options.set(option, value);
 					return;

@@ -1,10 +1,9 @@
 class Path {
-	constructor(path){
-		this.element = path;
-		this._parse(this.element.getAttribute('d'));
-		this.onHold = [];
-	};
-	_parse(d){
+	constructor(element){
+		this.element = element;
+		this.type = 'path';
+
+		const d = this.element.getAttribute('d');
 		if(!d) return this.data = [];
 		const data = d.match(/[a-z]|-?\d*\.?\d+/ig);
 		let i = 0;
@@ -18,7 +17,7 @@ class Path {
 		let start = {x: 0, y: 0};
 		this.data.forEach(item => {
 			const commands = Path.commands[item.command];
-			if(item.data.length != commands.length) throw Error('Invalid path data at Path._parse');
+			if(item.data.length != commands.length) throw Error('Invalid path data in Path object');
 			const pt = {...current};
 			item.data = item.data.map((num, ind) => {
 				const role = commands[ind];
@@ -30,26 +29,38 @@ class Path {
 			if(item.command == 'Z') current = {...start};
 		});
 	};
-	_stringify(data){
-		let result = '';
-		let current = {x: 0, y: 0};
-		let start = {x: 0, y: 0};
-		this.data.forEach(item => {
-			const commands = Path.commands[item.command];
-			result = result.slice(0, -1);
-			result += item.absolute ? item.command : item.command.toLowerCase();
-			const pt = {...current};
-			item.data.forEach((num, ind) => {
-				const role = commands[ind];
-				if(item.absolute || role == 'o') result += num;
-				else result += num - pt[role];
-				result += ' ';
-				current[role] = num;
+	_update(){
+		this.data.forEach((item, index) => item.index = index);
+		const text = (() => {
+			let result = '';
+			let current = {x: 0, y: 0};
+			let start = {x: 0, y: 0};
+			this.data.forEach(item => {
+				const commands = Path.commands[item.command];
+				result = result.slice(0, -1);
+				result += item.absolute ? item.command : item.command.toLowerCase();
+				const pt = {...current};
+				item.data.forEach((num, ind) => {
+					const role = commands[ind];
+					if(item.absolute || role == 'o') result += num;
+					else result += num - pt[role];
+					result += ' ';
+					current[role] = num;
+				});
+				if(item.command == 'M') start = {...current};
+				if(item.command == 'Z') current = {...start};
 			});
-			if(item.command == 'M') start = {...current};
-			if(item.command == 'Z') current = {...start};
-		});
-		return result.trim();
+			return result.trim();
+		})();
+		this.element.setAttribute('d', text);
+	};
+	static getDefault(size){
+		const NS = 'http://www.w3.org/2000/svg';
+		const element = document.createElementNS(NS, 'path');
+		const [x, y] = [Math.round(size.left + (size.width / 2)), Math.round(size.top + (size.height / 2))];
+		element.setAttribute('d', 'M' + x + ' ' + y);
+		element.setAttribute('style', options.defaultPathStyle);
+		return element;
 	};
 	getPoints(){
 		let id = 0;
@@ -82,6 +93,17 @@ class Path {
 		});
 		return result;
 	};
+	moveBy(x, y){
+		this.data.forEach(item => {
+			const commands = Path.commands[item.command];
+			item.data = item.data.map((num, ind) => {
+				if(commands[ind] == 'x') return num + x;
+				if(commands[ind] == 'y') return num + y;
+				return num;
+			});
+		});
+		this._update();
+	};
 	setPoint(ID, x, y){
 		let id = 0;
 		this.data.forEach(item => {
@@ -95,7 +117,7 @@ class Path {
 				}
 			});
 		});
-		this.update();
+		this._update();
 	};
 	removePoint(ID){
 		if(ID < 0) return;
@@ -110,7 +132,7 @@ class Path {
 			}
 			index++;
 		}
-		this.update();
+		this._update();
 	};
 	getItemByPoint(ID){
 		let id = 0;
@@ -134,21 +156,13 @@ class Path {
 			if(Path.commands[this.data[index].command][ind] == 'o') return options[i++];
 			return num;
 		});
-		this.update();
+		this._update();
 	};
 	toggleAbsolute(index, value){
 		if(value === undefined) value = !this.data[index].absolute;
 		this.data[index].absolute = value;
-		this.update();
+		this._update();
 		return value;
-	};
-	update(){
-		this.data.forEach((item, ind) => item.index = ind);
-		this.element.setAttribute('d', this._stringify(this.data));
-	};
-	static getAmountOfPoints(command){
-		const roles = Path.commands[command.toUpperCase()];
-		return Math.round(roles.filter(r => r != 'o').length / 2);
 	};
 	insertPointAt(command, ID){
 		const item = this.getItemByPoint(ID);
@@ -166,24 +180,12 @@ class Path {
 		// x and y now contain the end points of item
 		this.data.splice(item.index + 1, 0, {
 			command,
-			data: Path.commands[command].map(role => role == 'x' ? x : role == 'y' ? y : 0),
+			data: Path.commands[command].map((role, i) => role == 'x' ? x : role == 'y' ? y : i < 2 ? 1 : 0),
 			absolute: true
 		});
-		this.data.forEach((item, index) => item.index = index);
-		this.update();
+		this._update();
 	};
-	moveBy(x, y){
-		this.data.forEach(item => {
-			const commands = Path.commands[item.command];
-			item.data = item.data.map((num, ind) => {
-				if(commands[ind] == 'x') return num + x;
-				if(commands[ind] == 'y') return num + y;
-				return num;
-			});
-		});
-		this.update();
-	};
-}
+};
 
 Path.commands = {
 	'M': ['x', 'y'],

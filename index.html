@@ -9,6 +9,7 @@
 
 	<script src="javascript/options.js"></script>
 	<script src="javascript/Path.js"></script>
+	<script src="javascript/NonPath.js"></script>
 	<script src="javascript/UI.js"></script>
 	<script src="javascript/terminal.js"></script>
 	<script src="javascript/current.js"></script>
@@ -24,37 +25,54 @@
 
 	<section id="visual-editor">
 		<div id="preview">
-			<svg id="product"></svg>
+			<svg></svg>
 			<svg id="bubbles"></svg>
 			<span id="mouse-coordinates" hidden></span>
 		</div>
-		<div id="actions">
-			<button id="edit-button" title="Text editor">
+		<ul id="actions">
+			<li id="edit-button" title="Text editor">
 				<svg viewBox="0 0 36 36">
 					<path style="fill:currentColor;fill-rule:evenodd;" d="M0 5Q0 0 5 0H31Q36 0 36 5V31Q36 36 31 36H5Q0 36 0 31M4 6Q4 4 6 4H30Q32 4 32 6V17H19Q15 17 15 21V32H6Q4 32 4 30Z"/>
 				</svg>
-			</button>
-			<button data-action="add" title="Add new path">
+			</li>
+			<li class="dropdown">
 				<svg viewBox="0 0 36 36">
 					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M32 18H4H18V4V32"/>
 				</svg>
-			</button>
-			<button data-action="selectPrevious" title="Select next path">
+				<ul>
+					<li data-action="add path">
+						<svg viewBox="0 0 36 36">
+							<path d="M7 7Q27 7 16 19T30 29" style="stroke-width:4px;fill:none;stroke:currentColor;stroke-linecap:round;"/>
+						</svg>
+					</li>
+					<li data-action="add circle">
+						<svg viewBox="0 0 36 36">
+							<circle cx="18" cy="18" r="15" style="stroke-width:4px;fill:none;stroke:currentColor;"/>
+						</svg>
+					</li>
+					<li data-action="add rect">
+						<svg viewBox="0 0 36 36">
+							<rect x="5" y="7" width="26" height="22" style="stroke-width:4px;fill:none;stroke:currentColor;"/>
+						</svg>
+					</li>
+				</ul>
+			</li>
+			<li data-action="selectPrevious" title="Select next shape">
 				<svg viewBox="0 0 36 36">
 					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M32 18H4L16 6L4 18L16 30"/>
 				</svg>
-			</button>
-			<button data-action="selectNext" title="Select previous path">
+			</li>
+			<li data-action="selectNext" title="Select previous shape">
 				<svg viewBox="0 0 36 36">
 					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M4 18H32L20 6L32 18L20 30"/>
 				</svg>
-			</button>
-			<button id="remove-path" data-action="remove" title="Delete current path" hidden>
+			</li>
+			<li id="remove-element" data-action="remove" title="Delete current shape" hidden>
 				<svg viewBox="0 0 36 36">
 					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M6 6L30 30L18 18L6 30L30 6"/>
 				</svg>
-			</button>
-		</div>
+			</li>
+		</ul>
 		<div id="bubble-info" hidden>
 			<span id="bubble-command"></span>
 			<ul id="bubble-options"></ul>
@@ -132,9 +150,9 @@
 				</li>
 				<li data-insert="A">
 					<svg viewBox="0 0 36 36">
-						<circle cx="4" cy="28" r="4" style="fill:currentColor;"/>
-						<circle cx="32" cy="28" r="4" style="fill:currentColor;"/>
-						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M4 23A14 14 0 0 1 32 23"/>
+						<circle cx="4" cy="26" r="4" style="fill:currentColor;"/>
+						<circle cx="32" cy="26" r="4" style="fill:currentColor;"/>
+						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M4 21A14 14 0 0 1 32 21"/>
 					</svg>
 				</li>
 			</ul>

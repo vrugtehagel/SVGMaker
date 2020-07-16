@@ -12,8 +12,8 @@ $activeBubbleColor: rgba(255, 255, 255, 0.9);
 	cursor: pointer;
 	padding: 12px;
 	position: relative;
-	opacity: 0.6;
 	svg {
+		opacity: 0.6;
 		width: 24px;
 		height: 24px;
 		display: block;
@@ -29,8 +29,8 @@ $activeBubbleColor: rgba(255, 255, 255, 0.9);
 		background-color: rgba(255, 255, 255, 0);
 		transition: .2s;
 	}
-	&:hover::after { background-color: rgba(255, 255, 255, 0.1); }
-	&:active::after { background-color: rgba(255, 255, 255, 0.2); }
+	&:hover::after { background-color: rgba(255, 255, 255, 0.07); }
+	&:active::after { background-color: rgba(255, 255, 255, 0.15); }
 }
 
 html, body {
@@ -198,7 +198,57 @@ body:not(.visual-editor) #visual-editor * {
 	transition: none;
 	padding: 6px;
 	display: flex;
-	button { @include iconButton; }	
+	margin: 0;
+	list-style: none;
+	li { @include iconButton; }
+	.dropdown::after { z-index: -1; }
+	.dropdown:active::after { background-color: rgba(255, 255, 255, 0.07); }
+}
+
+.dropdown {
+	ul {
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		padding: 6px;
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+		list-style: none;
+		transform: scale(.95, .5) translate(-50%, -12px);
+		transform-origin: 50% 0;
+		opacity: 0;
+		background-color: #282828;
+		border-radius: 60px;
+		pointer-events: none;
+		transition: .3s;
+		&::before {
+			content: "";
+			position: absolute;
+			left: 0;
+			top: 0;
+			display: block;
+			width: 60px;
+			height: 60px;
+			border-radius: 0 50% 50% 50%;
+			background-color: #282828;
+			transform-origin: 50% 50%;
+			transform: rotate(45deg);
+		}
+	}
+	&:hover ul {
+		transform: translate(-50%, 6px);
+		opacity: 1;
+		pointer-events: initial;
+	}
+	&:hover::before {
+		content: "";
+		position: absolute;
+		height: 100%;
+		width: 100%;
+		top: 50%;
+		left: 0;
+	}
 }
 
 #error.shown, #error:hover {
@@ -231,7 +281,8 @@ body:not(.visual-editor) #visual-editor * {
 	top: 50%;
 	--aspect-ratio: 1;
 	transform: translate(-50%, -50%);
-	box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+	//box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+	background-color: #1d1d1d;
 	svg {
 		position: absolute;
 		display: block;
@@ -271,9 +322,9 @@ body:not(.visual-editor) #visual-editor * {
 	position: absolute;
 	pointer-events: none;
 	display: block;
-	padding: 0 6px;
-	bottom: 0;
+	top: 100%;
 	color: $subtleText;
+	white-space: nowrap;
 }
 
 #mouse-coordinates[hidden]{ opacity: 0; }
@@ -390,7 +441,7 @@ body:not(.visual-editor) #visual-editor * {
 	@include iconButton;
 }
 
-#remove-command:hover, #remove-path:hover{
+#remove-command:hover, #remove-element:hover{
 	color: $errorColor;
 }
 
@@ -407,13 +458,13 @@ body:not(.visual-editor) #visual-editor * {
 	transition: .2s;
 }
 
-#remove-path, #remove-command{
+#remove-element, #remove-command{
 	transition: .2s;
 	display: block;
 	transform: none;
 }
 
-#remove-path[hidden]{
+#remove-element[hidden]{
 	transform: translateY(-24px);
 	opacity: 0;
 }

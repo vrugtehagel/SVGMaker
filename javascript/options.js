@@ -2,13 +2,16 @@
 const options = {
 	editDelay: 300,
 	errorTimeShown: 4000,
-	bubbleSize: 18,
+	bubbleSize: 24,
 	snap: 1,
 	defaultPathStyle: 'stroke:red;fill:none;',
+	defaultNonPathStyle: 'fill: red;',
 	SVGOverflowVisible: false,
 	showTooltips: true,
 	showBrowserTooltips: true,
 	maxHistoryMemory: 200000,
+	autoFormatIndentation: true,
+	indentation: '\t',
 	setup: function(){
 		const savedOptions = JSON.parse(localStorage.SVGMakerOptions || '{}');
 		for(const [option, value] of Object.entries(savedOptions)) options.set(option, value);

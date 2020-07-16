@@ -177,22 +177,24 @@ body:not(.visual-editor) #visual-editor * {
   transition: none;
   padding: 6px;
   display: flex;
+  margin: 0;
+  list-style: none;
 }
-#actions button {
+#actions li {
   width: 24px;
   height: 24px;
   box-sizing: content-box;
   cursor: pointer;
   padding: 12px;
   position: relative;
-  opacity: 0.6;
 }
-#actions button svg {
+#actions li svg {
+  opacity: 0.6;
   width: 24px;
   height: 24px;
   display: block;
 }
-#actions button::after {
+#actions li::after {
   content: "";
   position: absolute;
   width: 100%;
@@ -203,11 +205,61 @@ body:not(.visual-editor) #visual-editor * {
   background-color: rgba(255, 255, 255, 0);
   transition: 0.2s;
 }
-#actions button:hover::after {
-  background-color: rgba(255, 255, 255, 0.1);
+#actions li:hover::after {
+  background-color: rgba(255, 255, 255, 0.07);
 }
-#actions button:active::after {
-  background-color: rgba(255, 255, 255, 0.2);
+#actions li:active::after {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+#actions .dropdown::after {
+  z-index: -1;
+}
+#actions .dropdown:active::after {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.dropdown ul {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  list-style: none;
+  transform: scale(0.95, 0.5) translate(-50%, -12px);
+  transform-origin: 50% 0;
+  opacity: 0;
+  background-color: #282828;
+  border-radius: 60px;
+  pointer-events: none;
+  transition: 0.3s;
+}
+.dropdown ul::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 60px;
+  height: 60px;
+  border-radius: 0 50% 50% 50%;
+  background-color: #282828;
+  transform-origin: 50% 50%;
+  transform: rotate(45deg);
+}
+.dropdown:hover ul {
+  transform: translate(-50%, 6px);
+  opacity: 1;
+  pointer-events: initial;
+}
+.dropdown:hover::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 50%;
+  left: 0;
 }
 
 #error.shown, #error:hover {
@@ -240,7 +292,7 @@ body:not(.visual-editor) #visual-editor * {
   top: 50%;
   --aspect-ratio: 1;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+  background-color: #1d1d1d;
 }
 #preview svg {
   position: absolute;
@@ -285,9 +337,9 @@ body:not(.visual-editor) #visual-editor * {
   position: absolute;
   pointer-events: none;
   display: block;
-  padding: 0 6px;
-  bottom: 0;
+  top: 100%;
   color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
 }
 
 #mouse-coordinates[hidden] {
@@ -412,9 +464,9 @@ body:not(.visual-editor) #visual-editor * {
   cursor: pointer;
   padding: 12px;
   position: relative;
-  opacity: 0.6;
 }
 #insert-command li svg {
+  opacity: 0.6;
   width: 24px;
   height: 24px;
   display: block;
@@ -431,10 +483,10 @@ body:not(.visual-editor) #visual-editor * {
   transition: 0.2s;
 }
 #insert-command li:hover::after {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.07);
 }
 #insert-command li:active::after {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 #remove-command {
@@ -444,9 +496,9 @@ body:not(.visual-editor) #visual-editor * {
   cursor: pointer;
   padding: 12px;
   position: relative;
-  opacity: 0.6;
 }
 #remove-command svg {
+  opacity: 0.6;
   width: 24px;
   height: 24px;
   display: block;
@@ -463,13 +515,13 @@ body:not(.visual-editor) #visual-editor * {
   transition: 0.2s;
 }
 #remove-command:hover::after {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.07);
 }
 #remove-command:active::after {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
-#remove-command:hover, #remove-path:hover {
+#remove-command:hover, #remove-element:hover {
   color: tomato;
 }
 
@@ -486,13 +538,13 @@ body:not(.visual-editor) #visual-editor * {
   transition: 0.2s;
 }
 
-#remove-path, #remove-command {
+#remove-element, #remove-command {
   transition: 0.2s;
   display: block;
   transform: none;
 }
 
-#remove-path[hidden] {
+#remove-element[hidden] {
   transform: translateY(-24px);
   opacity: 0;
 }

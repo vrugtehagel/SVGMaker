@@ -1,6 +1,8 @@
 const UI = {
 	dragging: false,
+	_textarea: null,
 	setup: function(){
+		UI._textarea = document.querySelector('textarea');
 		// set events to swapTo a different editor
 		(() => {
 			const visualEditor = document.getElementById('visual-editor');
@@ -25,14 +27,13 @@ const UI = {
 
 		// update svg when textarea is being edited
 		(() => {
-			const textarea = document.querySelector('textarea');
 			let timeoutID;
-			textarea.addEventListener('input', () => {
+			UI._textarea.addEventListener('input', () => {
 				clearTimeout(timeoutID);
 				timeoutID = setTimeout(() => {
 					try{
-						current.setSVGFromText(textarea.value);
-						current.save();
+						current.setSVGFromText(UI._textarea.value);
+						current.save({onlyLocalStorage: true});
 					} catch(error){ }
 				}, options.editDelay);
 			});
@@ -41,12 +42,11 @@ const UI = {
 		// resize text-editor's textarea when overflow occurs
 		(() => {
 			const textEditor = document.getElementById('text-editor');
-			const textarea = document.querySelector('textarea');
 			let timeoutID;
-			textarea.addEventListener('input', () => {
+			UI._textarea.addEventListener('input', () => {
 				const scrollTop = textEditor.scrollTop;
-				textarea.style.setProperty('--scroll-height', '0');
-				textarea.style.setProperty('--scroll-height', textarea.scrollHeight + 'px');
+				UI._textarea.style.setProperty('--scroll-height', '0');
+				UI._textarea.style.setProperty('--scroll-height', UI._textarea.scrollHeight + 'px');
 				textEditor.scrollTo(0, scrollTop);
 			});
 		})();
@@ -57,7 +57,7 @@ const UI = {
 				if(!UI.dragging) return;
 				if(!UI.dragging.mousemove) return;
 				event.preventDefault();
-				const {x, y} = UI.getPositionInSVG(event.clientX, event.clientY);
+				const {x, y} = UI.SVG.getMousePosition(event.clientX, event.clientY);
 				mx = UI.dragging.mouse.x;
 				my = UI.dragging.mouse.y;
 				UI.dragging.mouse.dx = x - mx;
@@ -114,30 +114,32 @@ const UI = {
 			});
 		})();
 
-		// set "tab" on textarea
+		// set keyboard keyboard "shortcuts" on textarea
 		(() => {
-			const textarea = document.querySelector('textarea');
+			const textarea = UI._textarea;
+			const insertAtCaret = text => {
+				const position = textarea.selectionStart;
+				if(position === undefined) return;
+				textarea.value = textarea.value.slice(0, position)
+					+ text
+					+ textarea.value.slice(position);
+				textarea.selectionStart = position + text.length;
+				textarea.selectionEnd = position + text.length;
+			};
 			textarea.addEventListener('keydown', event => {
 				if(event.key == 'Tab'){
 					event.preventDefault();
-					const position = textarea.selectionStart;
-					if(position === undefined) return;
-					textarea.value = textarea.value.slice(0, position)
-						+ '\t'
-						+ textarea.value.slice(position);
-					textarea.selectionStart = position + 1;
-					textarea.selectionEnd = position + 1;
+					insertAtCaret(options.indentation);
 				}
 			});
 		})();
 
 		// set save behavior
 		(() => {
-			const textarea = document.querySelector('textarea');
 			document.addEventListener('keydown', event => {
 				if(event.key == 's' && event.ctrlKey){
 					event.preventDefault();
-					const error = current.SVGParseError(textarea.value);
+					const error = current.SVGParseError(UI._textarea.value);
 					if(error) UI.throwError('Couldn\'t save, ' + error);
 					else current.save();
 				}
@@ -147,13 +149,23 @@ const UI = {
 		// set keyboard shortcuts
 		(() => {
 			document.addEventListener('keydown', event => {
-				const key = event.key;
-				if(key == 'Delete' || (event.altKey && key == 'Backspace')){
+				const key = event.key.toUpperCase();
+				if(key == 'DELETE' || (event.altKey && key == 'BACKSPACE')){
 					if(current.activeBubble) UI.bubbles.remove();
-					else if(current.activeElement) UI.paths.remove();
+					else if(current.activeElement) UI.SVG.remove();
 				}
-				if(Path.commands.hasOwnProperty(key.toUpperCase())){
-					if(current.activeBubble) UI.bubbles.insert(key.toUpperCase());
+				else if(event.ctrlKey && key == 'Z'){
+					if(current.editor != 'visual') return;
+					event.preventDefault();
+					UI.set(current.undo);
+				}
+				else if(event.ctrlKey && key == 'Y'){
+					if(current.editor != 'visual') return;
+					event.preventDefault();
+					UI.set(current.redo);
+				}
+				else if(Path.commands.hasOwnProperty(key) && current.activeElement?.type == 'path'){
+					if(current.activeBubble) UI.bubbles.insert(key);
 				}
 			});
 		})();
@@ -163,8 +175,8 @@ const UI = {
 			const visualEditor = document.getElementById('visual-editor');
 			visualEditor.addEventListener('mousedown', event => {
 				if(UI.dragging) return;
-				if(event.target == visualEditor || event.target == current.SVG) UI.select(null);
-				else if(current.SVG.contains(event.target)) UI.select(event.target);
+				if(event.target == visualEditor || event.target == current.SVG) UI.SVG.select(null);
+				else if(current.SVG.contains(event.target)) UI.SVG.select(event.target);
 			});
 		})();
 
@@ -200,11 +212,13 @@ const UI = {
 
 		// set the action buttons (other than the swap editor one)
 		(() => {
-			const actionButtons = document.querySelectorAll('#actions button[data-action]');
+			const actionButtons = document.querySelectorAll('#actions li[data-action]');
 			for(const button of actionButtons){
 				button.addEventListener('click', () => {
-					const action = button.getAttribute('data-action');
-					if(UI.paths[action]) UI.paths[action]();
+					const attr = button.getAttribute('data-action').split(' ');
+					const action = attr[0];
+					const args = attr.slice(1);
+					UI.SVG[action](...args);
 				});
 			}
 		})();
@@ -214,7 +228,7 @@ const UI = {
 			const visualEditor = document.getElementById('visual-editor');
 			const span = document.getElementById('mouse-coordinates');
 			document.addEventListener('mousemove', event => {
-				const {x, y} = UI.getPositionInSVG(event.clientX, event.clientY);
+				const {x, y} = UI.SVG.getMousePosition(event.clientX, event.clientY);
 				UI.setMouseCoordinates(x, y);
 			});
 		})();
@@ -230,28 +244,22 @@ const UI = {
 		})();
 	},
 	swapTo: function(editor){
-		const textarea = document.querySelector('#text-editor textarea');
-		const body = document.body;
-		const preview = document.getElementById('preview');
-
-		body.classList.remove('visual-editor');
-		body.classList.remove('terminal');
+		document.body.classList.remove('visual-editor');
+		document.body.classList.remove('terminal');
 
 		if(editor == 'text'){
-			const bubbles = document.getElementById('bubbles');
-			textarea.value = current.getSVGAsText();
-			UI.bubbles.removeAll();
+			UI._textarea.value = current.getSVGAsText();
+			UI.SVG.select(null);
 		}
 		else if(editor == 'visual'){
-			try { current.setSVGFromText(textarea.value); }
+			try { current.setSVGFromText(UI._textarea.value); }
 			catch(error){ return UI.throwError(error); }
-			body.classList.add('visual-editor');
+			document.body.classList.add('visual-editor');
 
-			bubbles.setAttribute('viewBox', `0 0 ${current.size.width} ${current.size.height}`);
-			for(const path of current.SVG.querySelectorAll('path')) UI.paths.setDrag(path);
+			UI.SVG.setup();
 		}
 		else if(editor == 'terminal'){
-			body.classList.add('terminal');
+			document.body.classList.add('terminal');
 			document.querySelector('#terminal input').focus();
 		}
 		current.editor = editor;
@@ -279,20 +287,11 @@ const UI = {
 			if(UI.dragging) return;
 			UI.dragging = obj;
 			if(!UI.dragging.mousedown) return;
-			const {x, y} = UI.getPositionInSVG(event.clientX, event.clientY);
+			const {x, y} = UI.SVG.getMousePosition(event.clientX, event.clientY);
 			UI.dragging.mouse.x = x;
 			UI.dragging.mouse.y = y;
 			UI.dragging.mousedown(event);
 		});
-	},
-	getPositionInSVG: function(x, y){
-		const snap = x => options.snap * Math.round(x / options.snap);
-		const rect = current.SVG.getBoundingClientRect();
-		const size = current.size;
-		return {
-			x: snap((x - (rect.left || rect.x)) / rect.width * size.width),
-			y: snap((y - (rect.top || rect.y)) / rect.height * size.height)
-		};
 	},
 	setMouseCoordinates: function(x, y){
 		if(!UI.setMouseCoordinates.element) UI.setMouseCoordinates.element = document.getElementById('mouse-coordinates');
@@ -326,10 +325,110 @@ const UI = {
 			}
 		}
 	},
-	select: function(element){
-		if(!element) return UI.paths.select(null);
-		if(element.tagName == 'path') return UI.paths.select(element);
-		UI.select(null);
+	set: function(callback){
+		// save currently selected items
+		// run callback
+		// restor selected items
+		// meant for current.redo and current undo
+		const rememberBubble = !!current.activeBubble;
+		let allElements = Array.from(current.SVG.querySelectorAll('*'));
+		let elementIndex = allElements.indexOf(current.activeElement?.element);
+		let bubbleIndex = current.bubbles.indexOf(current.activeBubble);
+		callback();
+		UI.SVG.setup();
+		allElements = current.SVG.querySelectorAll('*');
+		if(elementIndex >= allElements.length) elementIndex = -1;
+		if(elementIndex != -1) UI.SVG.select(allElements[elementIndex]);
+		if(bubbleIndex >= current.bubbles.length) bubbleIndex = -1;
+		if(bubbleIndex != -1) UI.bubbles.select(current.bubbles[bubbleIndex]);
+	},
+	SVG: {
+		setup: function(){
+			const viewBox = current.SVG.getAttribute('viewBox');
+			if(viewBox) bubbles.setAttribute('viewBox', viewBox);
+			else bubbles.setAttribute('viewBox', `0 0 ${current.size.width} ${current.size.height}`);
+			const elements = current.SVG.querySelectorAll('*');
+			for(const element of elements){
+				if(element.tagName == 'path' || NonPath.support.includes(element.tagName)) UI.SVG.setDrag(element);
+			}
+		},
+		getMousePosition(x, y){
+			const snap = x => options.snap * Math.round(x / options.snap);
+			const rect = current.SVG.getBoundingClientRect();
+			const size = current.size;
+			return {
+				x: size.left + snap((x - (rect.left || rect.x)) / rect.width * size.width),
+				y: size.top + snap((y - (rect.top || rect.y) ) / rect.height * size.height)
+			};
+		},
+		select: function(element){
+			const removeButton = document.getElementById('remove-element');
+			if(!element){
+				current.activeElement = null;
+				UI.setMouseCoordinates(null);
+				UI.bubbles.removeAll();
+				removeButton.setAttribute('hidden', '');
+				return;
+			}
+			if(element.tagName == 'path') current.activeElement = new Path(element);
+			else if(NonPath.support.includes(element.tagName)) current.activeElement = new NonPath(element);
+			else return UI.SVG.select(null);
+			removeButton.removeAttribute('hidden');
+			UI.bubbles.createAll();
+		},
+		selectPrevious: function(){
+			const query = 'path,' + NonPath.support.join(',');
+			const elements = Array.from(current.SVG.querySelectorAll(query));
+			let index = elements.indexOf(current.activeElement?.element);
+			if(index < 1) index = elements.length - 1;
+			else index--;
+			UI.SVG.select(elements[index]);
+		},
+		selectNext: function(){
+			const query = 'path,' + NonPath.support.join(',');
+			const elements = Array.from(current.SVG.querySelectorAll(query));
+			let index = elements.indexOf(current.activeElement?.element);
+			if(index == elements.length - 1) index = 0;
+			else index++;
+			UI.SVG.select(elements[index]);
+		},
+		remove: function(){
+			if(!current.activeElement) return;
+			const query = 'path,' + NonPath.support.join(',');
+			const element = current.activeElement.element;
+			const elements = Array.from(current.SVG.querySelectorAll(query));
+			let index = elements.indexOf(element);
+			if(index == elements.length - 1) index--;
+			else index++;
+			UI.SVG.select(elements[index]);
+			element.remove();
+			current.save();
+		},
+		add: function(tag){
+			const size = current.size;
+			let element = tag == 'path' ? Path.getDefault(size) : NonPath.getDefault(tag, size);
+			current.SVG.appendChild(element);
+			UI.SVG.select(element);
+			UI.SVG.setDrag(element);
+			current.save();
+		},
+		setDrag: function(element){
+			UI.drag({
+				element: element,
+				button: LEFT_MOUSE_BUTTON,
+				mousedown: event => {
+					UI.SVG.select(element);
+					const {x, y} = UI.SVG.getMousePosition(event.clientX, event.clientY);
+					UI.setMouseCoordinates(x, y);
+				},
+				mousemove: event => {
+					const {dx, dy} = UI.dragging.mouse;
+					current.activeElement.moveBy(dx, dy);
+					UI.bubbles.moveAllBy(dx, dy);
+				},
+				mouseup: current.save
+			});
+		}
 	},
 	bubbles: {
 		createAll: function(){
@@ -353,7 +452,8 @@ const UI = {
 					if(point.axis == 'y' || point.axis == 'both') circle.setAttribute('cy', y);
 					current.activeElement.setPoint(point.id, x, y);
 					UI.bubbles.resetAll();
-				}
+				},
+				mouseup: current.save
 			});
 		},
 		removeAll: function(){
@@ -386,9 +486,10 @@ const UI = {
 			UI.bubbles.removeAll();
 			current.activeElement.removePoint(id);
 			UI.bubbles.createAll();
+			current.save();
 			const newPoints = current.activeElement.getPoints();
 			const point = newPoints.reverse().find(point => point.item.index == index);
-			if(!point) return console.log(index, newPoints);
+			if(!point) return;
 			UI.bubbles.select(current.bubbles[point.id]);
 		},
 		moveAllBy: function(dx, dy){
@@ -407,13 +508,17 @@ const UI = {
 			UI.bubbles.setInfo();
 			if(current.activeBubble){
 				current.activeBubble.classList.add('active');
-				editActions.removeAttribute('hidden', '');
-				console.log(current.bubbles, current.activeBubble, current.bubbles.indexOf(current.activeBubble));
-				if(current.bubbles.indexOf(current.activeBubble) == 0){
-					removeButton.setAttribute('hidden', '');
+				if(current.activeElement.type == 'path'){
+					editActions.removeAttribute('hidden');
+					if(current.bubbles.indexOf(current.activeBubble) == 0){
+						removeButton.setAttribute('hidden', '');
+					}
+					else{
+						removeButton.removeAttribute('hidden');
+					}
 				}
 				else{
-					removeButton.removeAttribute('hidden');
+					editActions.setAttribute('hidden', '');
 				}
 			}
 			else{
@@ -421,6 +526,7 @@ const UI = {
 			}
 		},
 		setInfo: function(){
+			if(current.activeElement?.tagName != 'path') return;
 			const bubbleInfo = document.getElementById('bubble-info');
 			const bubbleCommand = document.getElementById('bubble-command');
 			const bubbleOptions = document.getElementById('bubble-options');
@@ -489,6 +595,7 @@ const UI = {
 					const circle = current.bubbles[point.id];
 					pointsToPlace.forEach(point => UI.bubbles.setDrag(point));
 					UI.bubbles.select(circle);
+					current.save();
 					return false;
 				}
 				const point = pointsToPlace[i];
@@ -516,70 +623,6 @@ const UI = {
 			}
 			UI.dragging = dragObj(0);
 			//UI.bubbles.select(current.bubbles[point.id]);
-		}
-	},
-	paths: {
-		setDrag: function(path){
-			UI.drag({
-				element: path,
-				button: LEFT_MOUSE_BUTTON,
-				mousedown: event => {
-					UI.paths.select(path);
-					const {x, y} = UI.getPositionInSVG(event.clientX, event.clientY);
-					UI.setMouseCoordinates(x, y);
-				},
-				mousemove: event => {
-					const {dx, dy} = UI.dragging.mouse;
-					current.activeElement.moveBy(dx, dy);
-					UI.bubbles.moveAllBy(dx, dy)
-				}
-			});
-		},
-		add: function(){
-			const NS = 'http://www.w3.org/2000/svg';
-			const path = document.createElementNS(NS, 'path');
-			path.setAttribute('d', 'M0 0');
-			path.setAttribute('style', options.defaultPathStyle);
-			current.SVG.appendChild(path);
-			UI.paths.select(path);
-			UI.paths.setDrag(path);
-		},
-		select: function(element){
-			const removeButton = document.getElementById('remove-path');
-			if(!element){
-				current.activeElement = null;
-				UI.setMouseCoordinates(null);
-				UI.bubbles.removeAll();
-				removeButton.setAttribute('hidden', '');
-				return;
-			}
-			current.activeElement = new Path(element);
-			UI.bubbles.createAll();
-			removeButton.removeAttribute('hidden');
-		},
-		selectPrevious: function(){
-			const paths = Array.from(current.SVG.querySelectorAll('path'));
-			let index = paths.indexOf(current.activeElement?.element);
-			if(index < 1) index = paths.length - 1;
-			else index--;
-			UI.paths.select(paths[index]);
-		},
-		selectNext: function(){
-			const paths = Array.from(current.SVG.querySelectorAll('path'));
-			let index = paths.indexOf(current.activeElement?.element);
-			if(index == paths.length - 1) index = 0;
-			else index++;
-			UI.paths.select(paths[index]);
-		},
-		remove: function(){
-			if(!current.activeElement) return;
-			const path = current.activeElement.element;
-			const paths = Array.from(current.SVG.querySelectorAll('path'));
-			let index = paths.indexOf(current.activeElement.element);
-			if(index == paths.length - 1) index--;
-			else index++;
-			UI.paths.select(paths[index]);
-			path.remove();
 		}
 	}
 };
