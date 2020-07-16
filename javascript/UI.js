@@ -353,7 +353,11 @@ const UI = {
 			}
 		},
 		getMousePosition(x, y){
-			const snap = x => options.snap * Math.round(x / options.snap);
+			const decimals = options.snap.toString().split('.')[1].length;
+			const roundTo = (x, d) => Math.round(x * 10 ** d) / 10 ** d;
+			const snap = x => {
+				roundTo(options.snap * Math.round(x / options.snap), decimals);
+			};
 			const rect = current.SVG.getBoundingClientRect();
 			const size = current.size;
 			return {
