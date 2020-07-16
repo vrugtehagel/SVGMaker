@@ -9,12 +9,11 @@ It does this by offering a basic text editor and accompanying it with the follow
 
 ---
 ## Current feedback
- - doesn't seem to offer any edit functionality for non path SVG elements, non-style attributes
+[all addressed]
 
 ## Current todo
-- add styling functionality/attribute functionality
- - add functionality for rect, circle, ellipse, ?line, ?polyline, ?polygon
+ - add styling functionality/attribute functionality
+ - add functionality for ellipse, line, ?polyline, ?polygon
 
 ## Future todo
  - improve text editor (syntax highlighting, indentation-related functionality)
-
