@@ -1,3 +1,7 @@
+console.log('%cHi there!', 'font:50px/1.5 monospace;');
+console.log('If you\'re a programmer, and you\'re looking for extra features, you should try pressing F1!');
+console.log('If you\'re not, then maybe don\'t. Or do. But never paste stuff in here just because someone tells you to.');
+
 document.addEventListener('DOMContentLoaded', () => {
 	UI.setup();
 	terminal.setup();
@@ -21,7 +25,7 @@ const parseCSS = function(string){
 	//			{ property: 'stroke-width', value: '1px' }
 	//		]
 	if(!string) return [];
-	let result = {};
+	let result = [];
 	let stringDelimiter = null;
 	let inComment = false;
 	let lastCharacter = '';
@@ -62,7 +66,7 @@ const parseCSS = function(string){
 			if(depth != 0) return false;
 			current.value = currentString.trim();
 			currentString = '';
-			result[current.property] = current.value;
+			result.push({...current});
 			current = { property: null, value: null }
 		}
 		else if(c == '('){
@@ -84,7 +88,7 @@ const parseCSS = function(string){
 	if(currentString && current.property){
 		if(depth != 0) return false;
 		current.value = currentString.trim();
-		result[current.property] = current.value;
+		result.push({...current});
 	}
 	return result;
 };

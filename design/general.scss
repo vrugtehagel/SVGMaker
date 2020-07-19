@@ -1,10 +1,3 @@
-$subtleText: rgba(255, 255, 255, 0.4);
-$normalText: rgba(255, 255, 255, 0.6);
-$errorColor: tomato;
-$bubbleColor: rgba(255, 255, 255, 0.3);
-$nextBubbleColor: rgba(255, 255, 255, 0.7);
-$activeBubbleColor: rgba(255, 255, 255, 0.9);
-
 @mixin iconButton {
 	width: 24px;
 	height: 24px;
@@ -26,11 +19,12 @@ $activeBubbleColor: rgba(255, 255, 255, 0.9);
 		top: 0;
 		left: 0;
 		border-radius: 50%;
-		background-color: rgba(255, 255, 255, 0);
+		opacity: 0;
+		background-color: var(--hover-overlay-color);
 		transition: .2s;
 	}
-	&:hover::after { background-color: rgba(255, 255, 255, 0.07); }
-	&:active::after { background-color: rgba(255, 255, 255, 0.15); }
+	&:hover::after { opacity: 0.07; }
+	&:active::after { opacity: 0.15; }
 }
 
 html, body {
@@ -39,10 +33,71 @@ html, body {
 }
 
 body {
+	--subtle-text-color: rgba(255, 255, 255, 0.4);
+	--normal-text-color: rgba(255, 255, 255, 0.6);
+	--error-text-color: tomato;
+
+	--level-0-color: #181818;
+	--level-1-color: #202020;
+	--level-2-color: #282828;
+	--level-3-color: #303030;
+
+	--preview-background-color: rgba(0, 0, 0, 0.2);
+	--hover-overlay-color: white;
+
+	--terminal-background-color: #101010;
+	--terminal-text-color: var(--normal-text-color);
+
 	margin: 0;
-	color: $normalText;
+	background-color: var(--level-0-color);
+	color: var(--normal-text-color);
 	font: 18px / 1.5 monospace;
-	background-color: #181818;
+}
+
+[data-theme=light] {
+	--subtle-text-color: rgba(0, 0, 0, 0.3);
+	--normal-text-color: rgba(0, 0, 0, 0.5);
+	--error-text-color: tomato;
+
+	--preview-background-color: rgba(0, 0, 0, 0.03);
+	--hover-overlay-color: black;
+
+	--level-0-color: white;
+	--level-1-color: #fafafa;
+	--level-2-color: #f0f0f0;
+	--level-3-color: #eaeaea;
+
+	--terminal-background-color: white;
+	--terminal-text-color: var(--normal-text-color);
+}
+
+[data-theme=contrast] {
+	--subtle-text-color: rgba(255, 255, 255, 0.8);
+	--normal-text-color: white;
+	--error-text-color: red;
+
+	--preview-background-color: rgba(255, 255, 255, 0.2);
+	--hover-overlay-color: white;
+
+	--level-0-color: black;
+	--level-1-color: black;
+	--level-2-color: #404040;
+	--level-3-color: #404040;
+
+	--terminal-background-color: black;
+	--terminal-text-color: var(--normal-text-color);
+
+	#remove-element, #remove-command{
+		svg { transition: .2s; }
+		&:hover svg { opacity: 1; }
+	}
+}
+
+[data-theme=default]{
+	::selection {
+		color: rgba(0, 0, 0, 0.7);
+		background-color: white;
+	}
 }
 
 ::-webkit-scrollbar { height: 4px; width: 4px; }
@@ -66,6 +121,11 @@ input, textarea, button {
 	border-radius: 4px;
 }
 
+textarea {
+	display: block;
+	font-size: .8em;
+}
+
 button {
 	text-transform: uppercase;
 	font-weight: 900;
@@ -78,13 +138,8 @@ section {
 	height: 100vh;
 	bottom: 0;
 	right: 0;
-	background-color: #202020;
+	background-color: var(--level-1-color);
 	overflow: hidden;
-}
-
-::selection {
-	color: rgba(0, 0, 0, 0.7);
-	background-color: white;
 }
 
 [data-tooltip] {
@@ -96,14 +151,14 @@ section {
 		display: block;
 		padding: 6px 12px;
 		border-radius: 4px;
-		background-color: #282828;
+		background-color: var(--level-2-color);
 		white-space: nowrap;
 		transform: translate(2px, 50%);
 		pointer-events: none;
 		opacity: 0;
 		font-weight: 400;
-		font-family: Roboto, arial, sans-serif;
-		color: $subtleText;
+		font-family: arial, sans-serif;
+		color: var(--subtle-text-color);
 		transition: .2s;
 	}
 	&::before {
@@ -112,7 +167,7 @@ section {
 		bottom: 50%;
 		left: 100%;
 		border: 8px solid transparent;
-		border-right-color: #282828;
+		border-right-color: var(--level-2-color);
 		border-left-width: 0;
 		transform: translate(-6px, 50%);
 		opacity: 0;
@@ -136,15 +191,11 @@ section {
 	textarea {
 		--scroll-height: 50vh;
 		width: 100%;
-		display: block;
-		height: max(100vh, calc(50vh + var(--scroll-height)));
+		height: 100vh;
 		padding: 2em;
 		overflow: hidden;
 		box-sizing: border-box;
 		background: none;
-		border: none;
-		color: inherit;
-		font-size: .8em;
 		&::-webkit-scrollbar { height: 0; width: 0; }
 	}
 }
@@ -154,28 +205,34 @@ section {
 		height .3s,
 		right .3s,
 		bottom .3s;
-	border: 12px solid #303030;
+	border: 12px solid var(--level-3-color);
 	border-radius: 12px 0 0 0;
 	width: 40%;
 	height: 40%;
 	cursor: pointer;
-}
-
-body:not(.visual-editor) #visual-editor * {
-	pointer-events: none;
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		transition: 0s 0s;
+	}
 }
 
 .visual-editor {
-	#text-editor {
-		opacity: 0;
-		&::after { content: none; }
-	}
+	#text-editor { opacity: 0; }
 	#visual-editor {
 		right: -12px;
 		bottom: -12px;
 		width: 100%;
 		height: 100vh;
 		cursor: initial;
+		&::after {
+			left: 100%;
+			transition: 0s .3s;
+		}
 	}
 	#actions {
 		transform: none;
@@ -187,6 +244,9 @@ body:not(.visual-editor) #visual-editor * {
 	}
 	#edit-actions:not([hidden]){
 		transform: none;
+	}
+	#edit-style:not([hidden]) {
+		transform: translateY(-50%);
 	}
 }
 
@@ -200,9 +260,11 @@ body:not(.visual-editor) #visual-editor * {
 	display: flex;
 	margin: 0;
 	list-style: none;
+	background-color: var(--level-2-color);
+	border-bottom-right-radius: 30px;
 	li { @include iconButton; }
 	.dropdown::after { z-index: -1; }
-	.dropdown:active::after { background-color: rgba(255, 255, 255, 0.07); }
+	.dropdown:active::after { opacity: 0.07; }
 }
 
 .dropdown {
@@ -218,7 +280,7 @@ body:not(.visual-editor) #visual-editor * {
 		transform: scale(.95, .5) translate(-50%, -12px);
 		transform-origin: 50% 0;
 		opacity: 0;
-		background-color: #282828;
+		background-color: var(--level-3-color);
 		border-radius: 60px;
 		pointer-events: none;
 		transition: .3s;
@@ -231,7 +293,7 @@ body:not(.visual-editor) #visual-editor * {
 			width: 60px;
 			height: 60px;
 			border-radius: 0 50% 50% 50%;
-			background-color: #282828;
+			background-color: var(--level-3-color);
 			transform-origin: 50% 50%;
 			transform: rotate(45deg);
 		}
@@ -251,6 +313,23 @@ body:not(.visual-editor) #visual-editor * {
 	}
 }
 
+#actions > li {
+	transition: .2s;
+	display: block;
+	transform: none;
+}
+
+#actions > li[hidden] {
+	margin-right: -48px;
+	transform: translateY(-24px);
+	opacity: 0;
+}
+
+#actions > li:nth-last-child(1) { transition: .2s .1s, color .2s; }
+#actions > li:nth-last-child(1)[hidden]{ transition: .2s 0s, color .2s; }
+#actions > li:nth-last-child(2) { transition: .2s 0; }
+#actions > li:nth-last-child(2)[hidden]{ transition: .2s .1s; }
+
 #error.shown, #error:hover {
 	opacity: 1;
 	pointer-events: initial;
@@ -263,12 +342,12 @@ body:not(.visual-editor) #visual-editor * {
 	position: fixed;
 	bottom: 24px;
 	left: 24px;
-	color: $errorColor;
+	color: var(--error-text-color);
 	transition: .4s;
 	cursor: pointer;
 	padding: 12px 24px;
 	border-radius: 8px;
-	background-color: #303030;
+	background-color: var(--level-3-color);
 	transform: translateY(36px);
 	opacity: 0;
 	pointer-events: none;
@@ -281,8 +360,7 @@ body:not(.visual-editor) #visual-editor * {
 	top: 50%;
 	--aspect-ratio: 1;
 	transform: translate(-50%, -50%);
-	//box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
-	background-color: #1d1d1d;
+	background-color: var(--preview-background-color);
 	svg {
 		position: absolute;
 		display: block;
@@ -311,10 +389,11 @@ body:not(.visual-editor) #visual-editor * {
 }
 
 #bubbles circle {
-	fill: $bubbleColor;
+	fill: url(#bubble-fill);
 	transition: fill .2s;
-	&:hover { fill: $activeBubbleColor; }
-	&.active { fill: $activeBubbleColor; }
+	opacity: 0.3;
+	&:hover { opacity: 0.9; }
+	&.active { opacity: 0.9; }
 	//&.active + circle:not(:hover) { fill: $nextBubbleColor; }
 }
 
@@ -323,7 +402,7 @@ body:not(.visual-editor) #visual-editor * {
 	pointer-events: none;
 	display: block;
 	top: 100%;
-	color: $subtleText;
+	color: var(--subtle-text-color);
 	white-space: nowrap;
 }
 
@@ -337,16 +416,17 @@ body:not(.visual-editor) #visual-editor * {
 	max-width: 60vw;
 	padding: 12px;
 	display: flex;
+	border-top-right-radius: 16px;
 	flex-direction: row;
 	transform: translateY(100%);
 	opacity: 0;
+	background-color: var(--level-2-color);
 	transition: opacity .15s 0s,
 		transform .15s 0s;
 }
 
 #bubble-command {
 	display: inline-block;
-	background-color: #282828;
 	border-radius: 4px;
 	width: 1.5em;
 	text-align: center;
@@ -364,13 +444,13 @@ body:not(.visual-editor) #visual-editor * {
 	list-style: none;
 	li { margin-left: 6px; }
 	input {
-		background-color: #282828;
+		background-color: var(--level-1-color);
 		padding: 6px 12px;
 		box-sizing: content-box;
 		width: 3ch;
 		text-align: center;
 		line-height: inherit;
-		color: $subtleText;
+		color: var(--text-color);
 	}
 }
 
@@ -381,13 +461,13 @@ body:not(.visual-editor) #visual-editor * {
 }
 
 #terminal {
-	background-color: #101010;
-	color: $normalText;
+	background-color: var(--terminal-background-color);
+	color: var(--terminal-text-color);
 	left: 100vw;
 	opacity: 0;
 	transition: opacity .3s, left 0s .3s;
 	cursor: text;
-	.error { color: $errorColor; }
+	.error { color: var(--error-text-color); }
 	pre {
 		position: absolute;
 		top: 0;
@@ -426,23 +506,22 @@ body:not(.visual-editor) #visual-editor * {
 	padding: 6px;
 	display: block;
 	transition: .3s;
+	background-color: var(--level-2-color);
+	border-bottom-left-radius: 30px;
 	transform: translateX(100%);
 }
 
 #insert-command {
 	list-style: none;
-	margin: 0 0 10px 0;
-	padding: 0 0 6px;
+	margin: 0;
+	padding: 0;
 	position: relative;
 	li { @include iconButton; }
 }
 
 #remove-command {
 	@include iconButton;
-}
-
-#remove-command:hover, #remove-element:hover{
-	color: $errorColor;
+	margin: 16px 0 0;
 }
 
 #remove-command::before {
@@ -453,23 +532,15 @@ body:not(.visual-editor) #visual-editor * {
 	width: 80%;
 	height: 4px;
 	border-radius: 2px;
-	background-color: #282828;
+	background-color: var(--level-3-color);
 	transform: translate(-50%, -6px);
 	transition: .2s;
 }
 
-#remove-element, #remove-command{
-	transition: .2s;
-	display: block;
-	transform: none;
-}
-
-#remove-element[hidden]{
-	transform: translateY(-24px);
-	opacity: 0;
-}
+#remove-element:hover, #remove-command:hover { color: var(--error-text-color); }
 
 #remove-command[hidden]{
+	margin: 0 0 -48px;
 	transform: translateX(24px);
 	opacity: 0;
 }
@@ -477,4 +548,28 @@ body:not(.visual-editor) #visual-editor * {
 #remove-command[hidden]::before {
 	transform: translateX(-24px) translate(-50%, -6px);
 	opacity: 0;
+}
+
+#edit-style, #edit-style[hidden] {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	border-radius: 0 16px 16px 0;
+	padding: 12px 12px 12px 18px;
+	background-color: var(--level-2-color);
+	transition: transform .3s;
+	display: block;
+	transform: translate(-100%, -50%);
+	textarea {
+		max-width: 60vw;
+		max-height: 80vh;
+		min-width: 5vw;
+		min-height: 5vh;
+		width: 200px;
+		height: 300px;
+		padding: 1em;
+		background-color: var(--level-1-color);
+		color: var(--text-color);
+		&::placeholder { color: var(--subtle-text-color); opacity: 1; }
+	}
 }

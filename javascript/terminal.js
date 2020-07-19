@@ -59,9 +59,10 @@ const terminal = {
 		terminal._pre.appendChild(span);
 		terminal._pre.appendChild(textNode);
 	},
-	run: function(command){
+	run: function(command, initial = true){
 		terminal.history.unshift(command);
-		terminal.write('> ' + command);
+		if(initial) terminal.write('> ' + command);
+		else terminal.write(command);
 		const name = command.includes(' ') ? command.slice(0, command.indexOf(' ')) : command;
 		if(!terminal.commands[name]) return terminal.error(`command "${name}" was not recognized as a valid command`);
 		const args = [];
@@ -267,6 +268,22 @@ const terminal = {
 				['set_background none', 'remove background'],
 				['set_background [options]', 'set background with options to pass on to the background CSS property'],
 				['set_background', 'set background with default options ("50% 50% / contain no-repeat")']
+			]
+		},
+		'theme': {
+			action: function(name){
+				if(!name){
+					const themes = ['default', 'light', 'contrast'];
+					themes.forEach(theme => terminal.write(theme));
+				}
+				else{
+					terminal.run('options set theme ' + name, false);
+				}
+			},
+			description: 'set a theme for the editor',
+			syntax: [
+				['theme', 'list the available themes'],
+				['theme [name]', 'set theme']
 			]
 		}
 	}

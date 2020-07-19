@@ -2,6 +2,7 @@ current = {
 	SVG: null,
 	activeElement: null,
 	activeBubble: null,
+	creatingBubble: false,
 	bubbles: [],
 	size: null,
 	editor: 'text',
@@ -57,6 +58,15 @@ current = {
 		}
 	},
 	getSVGAsText: function(){
+		const SVG = current.SVG.cloneNode(true);
+		if(options.removeEmptyPaths){
+			const paths = SVG.querySelectorAll('path');
+			for(const path of paths){
+				const d = path.getAttribute('d');
+				const commands = d.match(/[a-z]/ig);
+				if(commands.length == 1 && commands[0] == 'M') path.remove();
+			}
+		}
 		if(options.autoFormatIndentation){
 			const walk = (element, depth = 0) => {
 				if(element.nodeType == Node.TEXT_NODE){
@@ -64,7 +74,7 @@ current = {
 				}
 				else{
 					const indentation = document.createTextNode('\n' + options.indentation.repeat(depth));
-					element.parentNode.insertBefore(indentation, element);
+					element.parentNode?.insertBefore(indentation, element);
 				}
 				const children = Array.from(element.childNodes);
 				for(const child of children) walk(child, depth + 1);
@@ -73,10 +83,10 @@ current = {
 					element.appendChild(indentation);
 				}
 			}
-			walk(current.SVG);
+			walk(SVG);
 		}
-		const voidTags = ['path', 'circle', 'rect', 'line'];
-		let result = current.SVG.outerHTML;
+		const voidTags = ['path', 'circle', 'rect', 'line', 'ellipse'];
+		let result = SVG.outerHTML;
 		for(const tag of voidTags){
 			result = result.replace(new RegExp(`\>\s*\<\/${tag}\>`, 'g'), '/>');
 		}

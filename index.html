@@ -5,7 +5,7 @@
 	<link rel="icon" href="favicon.ico" type="image/x-icon" />
 
 	<link rel="stylesheet" href="design/general.css">
-	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300" rel="stylesheet">
+	<!--link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300" rel="stylesheet"-->
 
 	<script src="javascript/options.js"></script>
 	<script src="javascript/Path.js"></script>
@@ -18,6 +18,17 @@
 	<title>SVGMaker</title>
 </head>
 <body spellcheck="false">
+	<svg>
+		<defs>
+			<radialGradient id="bubble-fill">
+				<stop offset="10%" stop-color="black" />
+				<stop offset="45%" stop-color="black" />
+				<stop offset="55%" stop-color="white" />
+				<stop offset="100%" stop-color="white" />
+			</radialGradient>
+		</defs>
+	</svg>
+
 	<section id="text-editor">
 		<textarea></textarea>
 	</section>
@@ -47,12 +58,17 @@
 					</li>
 					<li data-action="add circle" title="Add circle">
 						<svg viewBox="0 0 36 36">
-							<circle cx="18" cy="18" r="15" style="stroke-width:4px;fill:none;stroke:currentColor;"/>
+							<circle cx="18" cy="18" r="14" style="stroke-width:4px;fill:none;stroke:currentColor;"/>
 						</svg>
 					</li>
 					<li data-action="add rect" title="Add rectangle">
 						<svg viewBox="0 0 36 36">
 							<rect x="5" y="7" width="26" height="22" style="stroke-width:4px;fill:none;stroke:currentColor;"/>
+						</svg>
+					</li>
+					<li data-action="add ellipse" title="Add ellipse">
+						<svg viewBox="0 0 36 36">
+							<ellipse cx="18" cy="18" rx="14" ry="9" style="stroke-width:4px;stroke:currentColor;fill:none;"/>
 						</svg>
 					</li>
 				</ul>
@@ -67,6 +83,12 @@
 					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M4 18H32L20 6L32 18L20 30"/>
 				</svg>
 			</li>
+			<li id="style-element" title="Style current shape">
+				<svg viewBox="0 0 36 36">
+					<path d="M30 6L12 24L21 15" style="stroke:currentColor;stroke-width:8px;stroke-linecap:round;"/>
+					<path d="M7 23L13 29L3 33ZZ" style="fill:currentColor;"/>
+				</svg>
+			</li>
 			<li id="remove-element" data-action="remove" title="Delete current shape" hidden>
 				<svg viewBox="0 0 36 36">
 					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M6 6L30 30L18 18L6 30L30 6"/>
@@ -77,8 +99,6 @@
 			<span id="bubble-command"></span>
 			<ul id="bubble-options"></ul>
 		</div>
-
-
 		<div id="edit-actions" hidden>
 			<ul id="insert-command">
 				<li data-insert="M">
@@ -91,20 +111,6 @@
 						<circle cx="7" cy="7" r="4" style="fill:currentColor;"/>
 						<circle cx="29" cy="29" r="4" style="fill:currentColor;"/>
 						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M11 11L25 25"/>
-					</svg>
-				</li>
-				<li data-insert="H">
-					<svg viewBox="0 0 36 36">
-						<circle cx="4" cy="18" r="4" style="fill:currentColor;"/>
-						<circle cx="32" cy="18" r="4" style="fill:currentColor;"/>
-						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M9 18H27"/>
-					</svg>
-				</li>
-				<li data-insert="V">
-					<svg viewBox="0 0 36 36">
-						<circle cx="18" cy="4" r="4" style="fill:currentColor;"/>
-						<circle cx="18" cy="32" r="4" style="fill:currentColor;"/>
-						<path style="stroke-width:4px;fill:none;stroke:currentColor;" d="M18 9V27"/>
 					</svg>
 				</li>
 				<li data-insert="Z">
@@ -161,6 +167,9 @@
 					<path style="fill:none;stroke:currentColor;stroke-width:8px;stroke-linecap:round;stroke-linejoin:round;" d="M8 8L28 28L18 18L8 28L28 8"/>
 				</svg>
 			</button>
+		</div>
+		<div id="edit-style" hidden>
+			<textarea placeholder="Your CSS"></textarea>			
 		</div>
 	</section>
 

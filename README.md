@@ -9,11 +9,12 @@ It does this by offering a basic text editor and accompanying it with the follow
 
 ---
 ## Current feedback
-[all addressed]
+ - initial viewbox too small
 
 ## Current todo
- - add styling functionality/attribute functionality
- - add functionality for ellipse, line, ?text, ?polyline, ?polygon
+ - add functionality for ?text, ?polyline, ?polygon
 
 ## Future todo
  - improve text editor (syntax highlighting, indentation-related functionality)
+ - ?make transforms affect bubbles
+ - adjust stroke-width on created paths to viewport & zoom

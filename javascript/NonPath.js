@@ -9,11 +9,14 @@ class NonPath {
 		});
 	};
 	_update(){
-		if(this.type == 'circle'){
-			this.element.setAttribute('cx', this.data.cx);
-			this.element.setAttribute('cy', this.data.cy);
-			this.element.setAttribute('r', this.data.r);			
-		}
+		const naiveSet = () => {
+			NonPath.attributes[this.type].forEach(attribute => {
+				this.element.setAttribute(attribute, this.data[attribute]);
+			});
+		};
+		if(this.type == 'circle') naiveSet();
+		else if(this.type == 'line') naiveSet();
+		else if(this.type == 'ellipse') naiveSet();
 		else if(this.type == 'rect'){
 			const [x1, y1, x2, y2] = [
 				this.data.x,
@@ -36,29 +39,53 @@ class NonPath {
 			element.setAttribute('cx', x);
 			element.setAttribute('cy', y);
 			element.setAttribute('r', Math.round(Math.min(w / 4, h / 4)));
-			element.setAttribute('style', options.defaultNonPathStyle);
 		}
 		else if(tag == 'rect'){
 			element.setAttribute('x', Math.round(x - w / 4));
 			element.setAttribute('y', Math.round(y - h / 4));
 			element.setAttribute('width', Math.round(w / 2));
 			element.setAttribute('height', Math.round(h / 2));
-			element.setAttribute('style', options.defaultNonPathStyle);
 		}
+		else if (tag == 'line'){
+			element.setAttribute('x1', Math.round(x - w / 4));
+			element.setAttribute('y1', Math.round(y - h / 4));
+			element.setAttribute('x2', Math.round(x + w / 4));
+			element.setAttribute('y2', Math.round(x + h / 4));
+		}
+		else if (tag == 'ellipse'){
+			element.setAttribute('cx', x);
+			element.setAttribute('cy', y);
+			element.setAttribute('rx', Math.round(Math.min(w / 4, h / 4)));
+			element.setAttribute('ry', Math.round(Math.min(w / 6, h / 6)));
+		}
+		element.setAttribute('style', options.defaultNonPathStyle);
 		return element;
 	};
 	getPoints(){
 		if(this.type == 'circle'){
 			return [
-				{x: this.data.cx, y: this.data.cy, axis: "both", id: 0},
-				{x: this.data.cx + this.data.r, y: this.data.cy, axis: "x", id: 1}
+				{x: this.data.cx, y: this.data.cy, id: 0},
+				{x: this.data.cx + this.data.r, y: this.data.cy, id: 1}
 			];
 		}
 		else if(this.type == 'rect'){
 			return [
-				{x: this.data.x, y: this.data.y, axis: "both", id: 0},
-				{x: this.data.x + this.data.width, y: this.data.y + this.data.height, axis: "both", id: 1}
-			]
+				{x: this.data.x, y: this.data.y, id: 0},
+				{x: this.data.x + this.data.width, y: this.data.y + this.data.height, id: 1}
+			];
+		}
+		else if(this.type == 'line'){
+			return [
+				{x: this.data.x1, y: this.data.y1, id: 0},
+				{x: this.data.x2, y: this.data.y2, id: 1}
+			];
+		}
+		else if(this.type == 'ellipse'){
+			return [
+				{x: this.data.cx, y: this.data.cy, id: 0},
+				{x: this.data.cx + this.data.rx, y: this.data.cy, id: 1},
+				{x: this.data.cx, y: this.data.cy + this.data.ry, id: 2}
+			];
 		}
 	};
 	moveBy(x, y){
@@ -69,6 +96,16 @@ class NonPath {
 		else if(this.type == 'rect'){
 			this.data.x += x;
 			this.data.y += y;
+		}
+		else if(this.type == 'line'){
+			this.data.x1 += x;
+			this.data.y1 += y;
+			this.data.x2 += x;
+			this.data.y2 += y;
+		}
+		else if(this.type == 'ellipse'){
+			this.data.cx += x;
+			this.data.cy += y;
 		}
 		this._update();
 	};
@@ -82,7 +119,6 @@ class NonPath {
 				const [X, Y] = [this.data.x + this.data.width, this.data.y + this.data.height];
 				const [X1, Y1, X2, Y2] = [x, y, X, Y];
 				this.data = {x: X1, y: Y1, width: X2 - X1, height: Y2 - Y1};
-				console.log(this.data);
 			}
 			else if(ID == 1){
 				const [X, Y] = [this.data.x, this.data.y];
@@ -90,13 +126,24 @@ class NonPath {
 				this.data = {x: X1, y: Y1, width: X2 - X1, height: Y2 - Y1};
 			}
 		}
+		else if(this.type == 'line'){
+			if(ID == 0) this.data = {...this.data, x1: x, y1: y};
+			else this.data = {...this.data, x2: x, y2: y};
+		}
+		else if(this.type == 'ellipse'){
+			if(ID == 0) this.data = {...this.data, cx: x, cy: y};
+			else if(ID == 1) this.data.rx = Math.abs(x - this.data.cx) || 1;
+			else this.data.ry = Math.abs(y - this.data.cy) || 1;
+		}
 		this._update();
 	}
 };
 
-NonPath.support = ['circle', 'rect'];
+NonPath.support = ['circle', 'rect', 'line', 'ellipse'];
 
 NonPath.attributes = {
 	'circle': ['cx', 'cy', 'r'],
-	'rect': ['x', 'y', 'width', 'height']
+	'rect': ['x', 'y', 'width', 'height'],
+	'line': ['x1', 'y1', 'x2', 'y2'],
+	'ellipse': ['cx', 'cy', 'rx', 'ry']
 };

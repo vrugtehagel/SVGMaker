@@ -6,12 +6,16 @@ const options = {
 	snap: 1,
 	defaultPathStyle: 'stroke:red;fill:none;',
 	defaultNonPathStyle: 'fill: red;',
+	theme: 'default',
 	SVGOverflowVisible: false,
 	showTooltips: true,
 	showBrowserTooltips: true,
 	maxHistoryMemory: 200000,
 	autoFormatIndentation: true,
 	indentation: '\t',
+	invertZoom: false,
+	chainCommands: true,
+	removeEmptyPaths: true,
 	setup: function(){
 		const savedOptions = JSON.parse(localStorage.SVGMakerOptions || '{}');
 		for(const [option, value] of Object.entries(savedOptions)) options.set(option, value);
@@ -33,6 +37,9 @@ const options = {
 		}
 		else if(option == 'showBrowserTooltips'){
 			UI.toggleTitleAttributes(value);
+		}
+		else if(option == 'theme'){
+			document.body.setAttribute('data-theme', value);
 		}
 	},
 }
