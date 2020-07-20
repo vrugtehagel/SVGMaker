@@ -156,7 +156,7 @@ const terminal = {
 				if(!format) return terminal.error('invalid argument list');
 				const xmlns = current.SVG.hasAttribute('xmlns');
 				if(!xmlns) current.SVG.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-				const content = current.getAsText();
+				const content = current.getSVGAsText();
 				const dataURL = 'data:image/svg+xml;base64,' + btoa(content);
 				if(!xmlns) current.SVG.removeAttribute('xmlns');
 				const a = document.createElement('a');

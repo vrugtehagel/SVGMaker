@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	terminal.setup();
 	options.setup();
 	current.setup();
+	UI.SVG.setup();
 	UI.swapTo('text');
 });
 
@@ -95,3 +96,12 @@ const parseCSS = function(string){
 
 LEFT_MOUSE_BUTTON = 0;
 RIGHT_MOUSE_BUTTON = 2;
+DEFAULT_SVG = `<svg viewBox="0 0 100 100">
+	<rect x="0" y="0" width="100" height="100" style="fill:#abd3e4;"/>
+	<path d="M53 65L71 44L100 86L65 101Z" style="fill: #a59dac;"/>
+	<path d="M-4 77L31 32L78 98L28 109L-4 88Z" style="fill: #ada6b7;"/>
+	<path d="M31 32L43 96L78 98ZM71 44L90 97L100 86Z" style="fill:rgba(0, 0, 0, 0.1);"/>
+	<path d="M100 100H38L41 93C46 87 88 96 100 83Z" style="fill: #6f8e58;"/>
+	<path d="M0 81C38 83 34 93 75 100H0ZZ" style="fill: #819c62;"/>
+	<circle cx="76" cy="18" r="11" style="fill: #ffb965;"/>
+</svg>`;

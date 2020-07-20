@@ -35,6 +35,8 @@ html, body {
 body {
 	--subtle-text-color: rgba(255, 255, 255, 0.4);
 	--normal-text-color: rgba(255, 255, 255, 0.6);
+	--subtle-text-color-1: var(--subtle-text-color);
+	--normal-text-color-1: var(--text-color);
 	--error-text-color: tomato;
 
 	--level-0-color: #181818;
@@ -374,7 +376,7 @@ section {
 		display: block;
 		width: 100%;
 		pointer-events: none;
-		padding-bottom: calc(var(--aspect-ratio) * 100%);
+		padding-bottom: calc(var(--aspect-ratio, 1) * 100%);
 	}
 }
 

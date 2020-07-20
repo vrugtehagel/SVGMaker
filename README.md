@@ -9,7 +9,7 @@ It does this by offering a basic text editor and accompanying it with the follow
 
 ---
 ## Current feedback
- - initial viewbox too small
+[all addressed]
 
 ## Current todo
  - add functionality for ?text, ?polyline, ?polygon

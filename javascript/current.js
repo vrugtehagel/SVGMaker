@@ -38,8 +38,7 @@ current = {
 	},
 	restore: function(){
 		if(!localStorage.SVGMaker){
-			const defaultSVG = '<svg viewBox="0 0 5 5">\n\t<path style="fill:#355489;" d="M0 2V0H1V2H2V0H3V2H4V0H5V5H4V3H3V5Z"/>\n</svg>';
-			current.setSVGFromText(defaultSVG);
+			current.setSVGFromText(DEFAULT_SVG);
 			return;
 		}
 		current.setSVGFromText(localStorage.SVGMaker);
@@ -74,7 +73,7 @@ current = {
 				}
 				else{
 					const indentation = document.createTextNode('\n' + options.indentation.repeat(depth));
-					element.parentNode?.insertBefore(indentation, element);
+					if(element.parentNode) element.parentNode.insertBefore(indentation, element);
 				}
 				const children = Array.from(element.childNodes);
 				for(const child of children) walk(child, depth + 1);

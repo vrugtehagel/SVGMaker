@@ -33,6 +33,7 @@ const UI = {
 				timeoutID = setTimeout(() => {
 					try{
 						current.setSVGFromText(UI._textarea.value);
+						UI.SVG.setup();
 						current.save({onlyLocalStorage: true});
 					} catch(error){ }
 				}, options.editDelay);
@@ -84,7 +85,6 @@ const UI = {
 			const visualEditor = document.getElementById('visual-editor');
 			const clamp = (n, min, max) => n < min ? min : n > max ? max : n;
 			let sx, sy, mx, cx, cy, my, W, H;
-			let zoom = .5;
 
 			UI.drag({
 				element: visualEditor,
@@ -107,6 +107,11 @@ const UI = {
 			});
 
 			document.addEventListener('contextmenu', event => event.preventDefault());
+
+			const w = window.innerWidth;
+			const h = window.innerHeight;
+			let zoom = w < h ? .5 : .5 * h / w;
+			preview.style.width = 100 * zoom + '%';
 
 			document.addEventListener('wheel', event => {
 				if(!visualEditor.contains(event.target)) return;
@@ -157,8 +162,9 @@ const UI = {
 		(() => {
 			document.addEventListener('keydown', event => {
 				const key = event.key.toUpperCase();
+				if(event.target.tagName == 'INPUT' || event.target.tagName == 'TEXTAREA') return;
 				if(key == 'DELETE' || (event.altKey && key == 'BACKSPACE')){
-					if(current.activeBubble && current.activeElement?.type == 'path') UI.bubbles.remove();
+					if(current.activeBubble && current.activeElement && current.activeElement.type == 'path') UI.bubbles.remove();
 					else if(current.activeElement) UI.SVG.remove();
 				}
 				else if(key == 'ESCAPE'){
@@ -174,7 +180,7 @@ const UI = {
 					event.preventDefault();
 					UI.set(current.redo);
 				}
-				else if(Path.commands.hasOwnProperty(key) && current.activeElement?.type == 'path'){
+				else if(Path.commands.hasOwnProperty(key) && current.activeElement && current.activeElement.type == 'path'){
 					if(current.activeBubble || current.creatingBubble) UI.bubbles.insert(key);
 				}
 				else if(key == 'ARROWLEFT'){
@@ -194,7 +200,7 @@ const UI = {
 			});
 		})();
 
-		// set selecting elements is done in swapTo
+		// set deselecting (selecting elements is done in swapTo)
 		(() => {
 			const visualEditor = document.getElementById('visual-editor');
 			visualEditor.addEventListener('mousedown', event => {
@@ -369,7 +375,7 @@ const UI = {
 		// meant for current.redo and current undo
 		const rememberBubble = !!current.activeBubble;
 		let allElements = Array.from(current.SVG.querySelectorAll('*'));
-		let elementIndex = allElements.indexOf(current.activeElement?.element);
+		let elementIndex = allElements.indexOf(current.activeElement && current.activeElement.element);
 		let bubbleIndex = current.bubbles.indexOf(current.activeBubble);
 		callback();
 		UI.SVG.setup();
@@ -380,19 +386,23 @@ const UI = {
 		if(bubbleIndex != -1) UI.bubbles.select(current.bubbles[bubbleIndex]);
 	},
 	SVG: {
-		setup: function(){
+		setup: function(onlyVisual){
 			const viewBox = current.SVG.getAttribute('viewBox');
+			const preview = document.getElementById('preview');
 			if(viewBox) bubbles.setAttribute('viewBox', viewBox);
 			else bubbles.setAttribute('viewBox', `0 0 ${current.size.width} ${current.size.height}`);
+			preview.style.setProperty('--aspect-ratio', current.size.height / current.size.width);
+			if(onlyVisual) return;
 			const elements = current.SVG.querySelectorAll('*');
 			for(const element of elements){
 				if(element.tagName == 'path' || NonPath.support.includes(element.tagName)) UI.SVG.setDrag(element);
 			}
 		},
 		getMousePosition(x, y){
-			const decimals = options.snap.toString().split('.')[1]?.length;
+			const decimals = options.snap.toString().split('.')[1];
+			const numDecimals = decimals ? decimals.length : 0;
 			const roundTo = (x, d) => d ? Math.round(x * 10 ** d) / 10 ** d : x;
-			const snap = x => roundTo(options.snap * Math.round(x / options.snap), decimals);
+			const snap = x => roundTo(options.snap * Math.round(x / options.snap), numDecimals);
 			const rect = current.SVG.getBoundingClientRect();
 			const size = current.size;
 			return {
@@ -412,7 +422,7 @@ const UI = {
 				removeButton.setAttribute('hidden', '');
 				return;
 			}
-			if(element == current.activeElement?.element) return;
+			if(current.activeElement && element == current.activeElement.element) return;
 			if(element.tagName == 'path') current.activeElement = new Path(element);
 			else if(NonPath.support.includes(element.tagName)) current.activeElement = new NonPath(element);
 			else return UI.SVG.select(null);
@@ -423,7 +433,7 @@ const UI = {
 		selectPrevious: function(){
 			const query = 'path,' + NonPath.support.join(',');
 			const elements = Array.from(current.SVG.querySelectorAll(query));
-			let index = elements.indexOf(current.activeElement?.element);
+			let index = elements.indexOf(current.activeElement && current.activeElement.element);
 			if(index < 1) index = elements.length - 1;
 			else index--;
 			UI.SVG.select(elements[index]);
@@ -431,7 +441,7 @@ const UI = {
 		selectNext: function(){
 			const query = 'path,' + NonPath.support.join(',');
 			const elements = Array.from(current.SVG.querySelectorAll(query));
-			let index = elements.indexOf(current.activeElement?.element);
+			let index = elements.indexOf(current.activeElement && current.activeElement.element);
 			if(index == elements.length - 1) index = 0;
 			else index++;
 			UI.SVG.select(elements[index]);
@@ -492,7 +502,7 @@ const UI = {
 				const css = parseCSS(textarea.value);
 				if(!css || !css.length) return;
 				const string = css.reduce((result, {property, value}) => result + property + ':' + value + ';', '');
-				current.activeElement?.element.setAttribute('style', string);
+				current.activeElement.element.setAttribute('style', string);
 			},
 			close: function(){
 				if(!current.activeElement) return;
@@ -523,7 +533,8 @@ const UI = {
 					let {x, y} = UI.dragging.mouse;
 					if(event.shiftKey){
 						const previous = current.activeElement.getPoints()[point.id - 1];
-						if(previous && point?.item?.command != 'M'){
+						const pointIsM = point && point.item && point.item.command == 'M';
+						if(previous && !pointIsM){
 							const [X, Y] = [previous.x, previous.y];
 							if(Math.abs(x - X) < Math.abs(y - Y)) x = X;
 							else y = Y;
@@ -611,7 +622,7 @@ const UI = {
 			const circle = current.activeBubble;
 			const bubbleInfo = document.getElementById('bubble-info');
 			if(!circle) return bubbleInfo.setAttribute('hidden', '');
-			if(current.activeElement?.type != 'path') return;
+			if(!current.activeElement || current.activeElement.type != 'path') return;
 			const bubbleCommand = document.getElementById('bubble-command');
 			const bubbleOptions = document.getElementById('bubble-options');
 			bubbleOptions.empty();

@@ -151,7 +151,7 @@ class Path {
 			if(ID < id){
 				const index = item.index;
 				do this.data.splice(index, 1);
-				while(this.data[index]?.command == 'Z');
+				while(this.data[index] && this.data[index].command == 'Z');
 				break;
 			}
 		}
