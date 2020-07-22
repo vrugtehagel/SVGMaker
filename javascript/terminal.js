@@ -93,6 +93,8 @@ const terminal = {
 						if(name == 'help') continue;
 						terminal.write(name.padEnd(50, ' ') + command.description);
 					}
+					terminal.write('');
+					terminal.write('For info on a specific command, type help [command].');
 				}
 				else if(args.length == 1){
 					const name = args[0];

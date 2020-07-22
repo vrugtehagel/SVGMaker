@@ -73,15 +73,14 @@ class Path {
 					result += ' ';
 				}
 			});
-			return result.trim();
+			return result.trim().replace(/Z+/ig, 'Z');
 		})();
 		this.element.setAttribute('d', text);
 	};
-	static getDefault(size){
+	static getDefault(place){
 		const NS = 'http://www.w3.org/2000/svg';
 		const element = document.createElementNS(NS, 'path');
-		const [x, y] = [Math.round(size.left + (size.width / 2)), Math.round(size.top + (size.height / 2))];
-		element.setAttribute('d', 'M' + x + ' ' + y);
+		element.setAttribute('d', 'M' + place.x + ' ' + place.y);
 		element.setAttribute('style', options.defaultPathStyle);
 		return element;
 	};

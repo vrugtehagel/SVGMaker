@@ -69,7 +69,7 @@ current = {
 		if(options.autoFormatIndentation){
 			const walk = (element, depth = 0) => {
 				if(element.nodeType == Node.TEXT_NODE){
-					element.remove();
+					if(/^\s*$/.test(element.nodeValue)) element.remove();
 				}
 				else{
 					const indentation = document.createTextNode('\n' + options.indentation.repeat(depth));
@@ -84,10 +84,10 @@ current = {
 			}
 			walk(SVG);
 		}
-		const voidTags = ['path', 'circle', 'rect', 'line', 'ellipse'];
+		const voidTags = ['path', 'circle', 'rect', 'line', 'ellipse', 'animate'];
 		let result = SVG.outerHTML;
 		for(const tag of voidTags){
-			result = result.replace(new RegExp(`\>\s*\<\/${tag}\>`, 'g'), '/>');
+			result = result.replace(new RegExp(`"[\s\n\t]*\>[\s\n\t]*</${tag}>`,'g'), '"/\>');
 		}
 		return result;
 	},

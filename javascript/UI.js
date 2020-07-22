@@ -3,6 +3,8 @@ const UI = {
 	_textarea: null,
 	setup: function(){
 		UI._textarea = document.querySelector('textarea');
+		UI.viewport.setup();
+
 		// set events to swapTo a different editor
 		(() => {
 			const visualEditor = document.getElementById('visual-editor');
@@ -76,53 +78,6 @@ const UI = {
 				if(UI.dragging.button !== undefined && UI.dragging.button != event.button) return;
 				if(UI.dragging.mouseup) UI.dragging.mouseup(event);
 				if(!UI.dragging.overrideDragging) UI.dragging = false;
-			});
-		})();
-
-		// set the drag & zoom on the preview
-		(() => {
-			const preview = document.getElementById('preview');
-			const visualEditor = document.getElementById('visual-editor');
-			const clamp = (n, min, max) => n < min ? min : n > max ? max : n;
-			let sx, sy, mx, cx, cy, my, W, H;
-
-			UI.drag({
-				element: visualEditor,
-				button: RIGHT_MOUSE_BUTTON,
-				mousedown: event => {
-					event.preventDefault();
-					const rect = preview.getBoundingClientRect();
-					const bigRect = visualEditor.getBoundingClientRect();
-					[cx, cy] = [bigRect.left || bigRect.x, bigRect.top || bigRect.y];
-					[sx, sy] = [(rect.left || rect.x) - cx, (rect.top || rect.y) - cy];
-					[mx, my] = [event.clientX - cx - sx - .5 * rect.width, event.clientY - cy - sy - .5 * rect.height];
-					[W, H] = [bigRect.width, bigRect.height];					
-				},
-				mousemove: event => {
-					const left = 100 * (event.clientX - cx - mx) / W;
-					const top = 100 * (event.clientY - cy - my) / H;
-					preview.style.left = clamp(left, 0, 100) + '%';
-					preview.style.top = clamp(top, 0, 100) + '%';
-				}
-			});
-
-			document.addEventListener('contextmenu', event => event.preventDefault());
-
-			const w = window.innerWidth;
-			const h = window.innerHeight;
-			let zoom = w < h ? .5 : .5 * h / w;
-			preview.style.width = 100 * zoom + '%';
-
-			document.addEventListener('wheel', event => {
-				if(!visualEditor.contains(event.target)) return;
-				const editStyle = document.getElementById('edit-style');
-				if(editStyle.contains(event.target)) return;
-				const delta = Math.sign(event.deltaY);
-				if(event.deltaY < 0) zoom *= options.invertZoom ? 0.9 : 1.1;
-				if(event.deltaY > 0) zoom *= options.invertZoom ? 1.1 : 0.9;
-				zoom = clamp(zoom, 0.01, 10000); 
-				preview.style.width = 100 * zoom + '%';
-				if(current.activeElement) UI.bubbles.resetSize();
 			});
 		})();
 
@@ -259,7 +214,7 @@ const UI = {
 			const span = document.getElementById('mouse-coordinates');
 			document.addEventListener('mousemove', event => {
 				const {x, y} = UI.SVG.getMousePosition(event.clientX, event.clientY);
-				UI.setMouseCoordinates(x, y);
+				span.textContent = `(${x}, ${y})`;
 			});
 		})();
 
@@ -336,19 +291,6 @@ const UI = {
 			UI.dragging.mousedown(event);
 		});
 	},
-	setMouseCoordinates: function(x, y){
-		if(!UI.setMouseCoordinates.element) UI.setMouseCoordinates.element = document.getElementById('mouse-coordinates');
-		const span = UI.setMouseCoordinates.element;
-		if(!current.activeElement || x == null){
-			span.textContent = '';
-			span.setAttribute('hidden', '');
-		}
-		else {
-			span.textContent = `(${x}, ${y})`;
-			span.removeAttribute('hidden');
-			span.classList.toggle('right', current.size.width / 2 > x);
-		}
-	},
 	toggleTitleAttributes: function(bool){
 		if(bool === undefined) bool = !document.querySelector('[title]');
 		if(bool){
@@ -385,6 +327,103 @@ const UI = {
 		if(bubbleIndex >= current.bubbles.length) bubbleIndex = -1;
 		if(bubbleIndex != -1) UI.bubbles.select(current.bubbles[bubbleIndex]);
 	},
+	viewport: {
+		left: window.innerWidth / 2,
+		top: window.innerHeight / 2,
+		zoom: 1,
+		preview: null,
+		visualEditor: null,
+		setup: function(){
+			const preview = document.getElementById('preview');
+			const visualEditor = document.getElementById('visual-editor');
+			UI.viewport.preview = preview;
+			UI.viewport.visualEditor = visualEditor;
+			let sx, sy, mx, cx, cy, my, W, H;
+
+			const w = window.innerWidth;
+			const h = window.innerHeight;
+			UI.viewport.zoom = w < h ? .5 : .5 * h / w;
+			preview.style.width = 100 * UI.viewport.zoom + '%';
+
+			UI.drag({
+				element: visualEditor,
+				button: RIGHT_MOUSE_BUTTON,
+				mousedown: event => {
+					event.preventDefault();
+					const rect = preview.getBoundingClientRect();
+					const bigRect = visualEditor.getBoundingClientRect();
+					[cx, cy] = [bigRect.left || bigRect.x, bigRect.top || bigRect.y];
+					[sx, sy] = [(rect.left || rect.x) - cx, (rect.top || rect.y) - cy];
+					[mx, my] = [event.clientX - cx - sx - .5 * rect.width, event.clientY - cy - sy - .5 * rect.height];
+					[W, H] = [bigRect.width, bigRect.height];					
+				},
+				mousemove: event => {
+					const left = event.clientX - cx - mx;
+					const top = event.clientY - cy - my;
+					UI.viewport.set({left, top});
+				}
+			});
+
+			document.addEventListener('contextmenu', event => event.preventDefault());
+
+
+			document.addEventListener('wheel', event => {
+				const editStyle = document.getElementById('edit-style');
+				const delta = Math.sign(event.deltaY);
+				let factor = 1;
+				if(!visualEditor.contains(event.target)) return;
+				if(editStyle.contains(event.target)) return;
+				if(event.deltaY < 0) factor = options.invertZoom ? 0.9 : 1.1;
+				if(event.deltaY > 0) factor = options.invertZoom ? 1.1 : 0.9;
+				const zoom = UI.viewport.zoom * factor;
+				UI.viewport.set({zoom});
+				if(current.activeElement) UI.bubbles.resetSize();
+			});
+		},
+		set: function({left, top, zoom}){
+			if(left === undefined) left = UI.viewport.left;
+			if(top === undefined) top = UI.viewport.top;
+			if(zoom === undefined) zoom = UI.viewport.zoom;
+			const clamp = (n, min, max) => n < min ? min : n > max ? max : n;
+			const rect = UI.viewport.visualEditor.getBoundingClientRect();
+			const W = rect.width;
+			const H = rect.height;
+			zoom = clamp(zoom, 0.01, 10000);
+			const sw = zoom;
+			const sh = sw / current.size.width * current.size.height / H * W;
+			left = sw < 1
+				? clamp(left, 0, W)
+				: clamp(left, .5 * W * (1 - sw), .5 * W * (1 + sw));
+			top = sh < 1
+				? clamp(top, 0, H)
+				: clamp(top, .5 * H * (1 - sh), .5 * H * (1 + sh));
+			UI.viewport.preview.style.left = 100 * left / W + '%';
+			UI.viewport.preview.style.top = 100 * top / H + '%';
+			UI.viewport.preview.style.width = zoom * 100 + '%';
+			UI.viewport.left = left;
+			UI.viewport.top = top;
+			UI.viewport.zoom = zoom;
+		},
+		getVisiblePlace: function(){
+			const W = window.innerWidth;
+			const H = window.innerHeight;
+			const rect = UI.viewport.preview.getBoundingClientRect();
+			let right, bottom;
+			let left = rect.left || rect.x;
+			let top = rect.top || rect.y;
+			let width = rect.width;
+			let height = rect.height;
+			right = left + width > W ? W : left + width;
+			bottom = top + height > H ? H : top + height;
+			left = left < 0 ? 0 : left;
+			top = top < 0 ? 0 : top;
+			width = right - left;
+			height = bottom - top;
+			let {x, y} = UI.SVG.getMousePosition(left + width / 2, top + height / 2);
+			let r = Math.min(width / rect.width * current.size.width, height / rect.height * current.size.height) / 4;
+			return {r, x, y};
+		}
+	},
 	SVG: {
 		setup: function(onlyVisual){
 			const viewBox = current.SVG.getAttribute('viewBox');
@@ -416,14 +455,13 @@ const UI = {
 			UI.SVG.style.close();
 			if(!element){
 				current.activeElement = null;
-				UI.setMouseCoordinates(null);
 				UI.bubbles.removeAll();
 				styleButton.setAttribute('hidden', '');
 				removeButton.setAttribute('hidden', '');
 				return;
 			}
 			if(current.activeElement && element == current.activeElement.element) return;
-			if(element.tagName == 'path') current.activeElement = new Path(element);
+			else if(element.tagName == 'path') current.activeElement = new Path(element);
 			else if(NonPath.support.includes(element.tagName)) current.activeElement = new NonPath(element);
 			else return UI.SVG.select(null);
 			removeButton.removeAttribute('hidden');
@@ -459,8 +497,8 @@ const UI = {
 			current.save();
 		},
 		add: function(tag){
-			const size = current.size;
-			let element = tag == 'path' ? Path.getDefault(size) : NonPath.getDefault(tag, size);
+			const place = UI.viewport.getVisiblePlace();
+			let element = tag == 'path' ? Path.getDefault(place) : NonPath.getDefault(tag, place);
 			current.SVG.appendChild(element);
 			UI.SVG.select(element);
 			UI.SVG.setDrag(element);
@@ -474,7 +512,6 @@ const UI = {
 				mousedown: event => {
 					UI.SVG.select(element);
 					const {x, y} = UI.SVG.getMousePosition(event.clientX, event.clientY);
-					UI.setMouseCoordinates(x, y);
 				},
 				mousemove: event => {
 					const {dx, dy} = UI.dragging.mouse;
@@ -522,6 +559,16 @@ const UI = {
 				UI.bubbles.create(point);
 			});
 		},
+		clampToStraight(point, x, y){
+			const previous = current.activeElement.getPoints()[point.id - 1];
+			const pointIsM = point && point.item && point.item.command == 'M';
+			if(previous && !pointIsM){
+				const [X, Y] = [previous.x, previous.y];
+				if(Math.abs(x - X) < Math.abs(y - Y)) x = X;
+				else y = Y;
+			}
+			return {x, y};
+		},
 		setDrag(point){
 			const circle = current.bubbles[point.id];
 			UI.drag({
@@ -531,15 +578,7 @@ const UI = {
 				},
 				mousemove: event => {
 					let {x, y} = UI.dragging.mouse;
-					if(event.shiftKey){
-						const previous = current.activeElement.getPoints()[point.id - 1];
-						const pointIsM = point && point.item && point.item.command == 'M';
-						if(previous && !pointIsM){
-							const [X, Y] = [previous.x, previous.y];
-							if(Math.abs(x - X) < Math.abs(y - Y)) x = X;
-							else y = Y;
-						}
-					}
+					if(event.shiftKey) ({x: x, y: y} = UI.bubbles.clampToStraight(point, x, y));
 					current.activeElement.setPoint(point.id, x, y);
 					UI.bubbles.resetAll();
 				},
@@ -670,7 +709,7 @@ const UI = {
 			const circle = current.activeBubble;
 			const id = current.bubbles.indexOf(circle);
 			if(command == 'Z'){				
-				const newItem = current.activeElement.insertPointAt(command, id);
+				current.activeElement.insertPointAt(command, id);
 				current.save();
 				return;
 			}
@@ -712,7 +751,8 @@ const UI = {
 						y: +circle.getAttribute('cy')
 					},
 					mousemove: event => {
-						const {x, y} = UI.dragging.mouse;
+						let {x, y} = UI.dragging.mouse;
+						if(event.shiftKey) ({x, y} = UI.bubbles.clampToStraight(point, x, y));
 						pointsToPlace.slice(i).forEach(point => {
 							current.activeElement.setPoint(point.id, x, y);
 						});

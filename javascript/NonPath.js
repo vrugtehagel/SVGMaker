@@ -30,33 +30,32 @@ class NonPath {
 			this.element.setAttribute('height', Math.abs(y2 - y1) || 1);
 		}
 	};
-	static getDefault(tag, size){
+	static getDefault(tag, place){
 		const NS = 'http://www.w3.org/2000/svg';
 		const element = document.createElementNS(NS, tag);
-		const [x, y] = [Math.round(size.left + (size.width / 2)), Math.round(size.top + (size.height / 2))];
-		const [w, h] = [size.width, size.height];
+		const {x, y, r} = place;
 		if(tag == 'circle'){
 			element.setAttribute('cx', x);
 			element.setAttribute('cy', y);
-			element.setAttribute('r', Math.round(Math.min(w / 4, h / 4)));
+			element.setAttribute('r', Math.round(r));
 		}
 		else if(tag == 'rect'){
-			element.setAttribute('x', Math.round(x - w / 4));
-			element.setAttribute('y', Math.round(y - h / 4));
-			element.setAttribute('width', Math.round(w / 2));
-			element.setAttribute('height', Math.round(h / 2));
+			element.setAttribute('x', Math.round(x - r));
+			element.setAttribute('y', Math.round(y - .75 * r));
+			element.setAttribute('width', Math.round(2 * r));
+			element.setAttribute('height', Math.round(1.5 * r));
 		}
 		else if (tag == 'line'){
-			element.setAttribute('x1', Math.round(x - w / 4));
-			element.setAttribute('y1', Math.round(y - h / 4));
-			element.setAttribute('x2', Math.round(x + w / 4));
-			element.setAttribute('y2', Math.round(x + h / 4));
+			element.setAttribute('x1', Math.round(x - r));
+			element.setAttribute('y1', Math.round(y - r));
+			element.setAttribute('x2', Math.round(x + r));
+			element.setAttribute('y2', Math.round(x + r));
 		}
 		else if (tag == 'ellipse'){
 			element.setAttribute('cx', x);
 			element.setAttribute('cy', y);
-			element.setAttribute('rx', Math.round(Math.min(w / 4, h / 4)));
-			element.setAttribute('ry', Math.round(Math.min(w / 6, h / 6)));
+			element.setAttribute('rx', Math.round(r));
+			element.setAttribute('ry', Math.round(r / 3 * 2));
 		}
 		element.setAttribute('style', options.defaultNonPathStyle);
 		return element;
