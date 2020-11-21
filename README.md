@@ -7,16 +7,3 @@ It does this by offering a basic text editor and accompanying it with the follow
  - A fully-fledged terminal for the more complex functionality
  - Automatic saving throughout the whole process - don't lose anything when closing and re-opening the tab
 
----
-## Current feedback
-[all addressed]
-
-## Current todo
- - reset bubbles on ctrl+z
- - focus textarea on style editing button
- - add functionality for ?text, ?polyline, ?polygon
-
-## Future todo
- - improve text editor (syntax highlighting, indentation-related functionality)
- - ?make transforms affect bubbles
- - adjust stroke-width on created paths to viewport & zoom
