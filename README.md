@@ -12,7 +12,8 @@ It does this by offering a basic text editor and accompanying it with the follow
 [all addressed]
 
 ## Current todo
- - parseCSS fails calc(1 * 2)
+ - reset bubbles on ctrl+z
+ - focus textarea on style editing button
  - add functionality for ?text, ?polyline, ?polygon
 
 ## Future todo

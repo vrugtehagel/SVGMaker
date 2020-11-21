@@ -52,6 +52,9 @@ const parseCSS = function(string){
 				inComment = true;
 				currentString = currentString.slice(0, -1);
 			}
+			else {
+				currentString += c;
+			}
 		}
 		else if(c == '"' || c == '\''){
 			stringDelimiter = c;

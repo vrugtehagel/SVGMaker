@@ -287,6 +287,50 @@ const terminal = {
 				['theme', 'list the available themes'],
 				['theme [name]', 'set theme']
 			]
+		},
+		'scale': {
+			action: function(factor){
+				let viewBox = current.SVG.getAttribute('viewBox');
+				if(viewBox) current.SVG.setAttribute('viewBox', viewBox.split(/\s*[,\s]\s*/).map(n => n * factor).join(' '));
+				const elements = current.SVG.querySelectorAll('*');
+				for(const element of elements){
+					if(element.tagName == 'path'){
+						const path = new Path(element);
+						for(const item of path.data){
+							const command = item.command;
+							const roles = Path.commands[command];
+							item.data = item.data.map((num, i) => {
+								const role = roles[i];
+								if(role == 'o') return i < 2 ? num * factor : num;
+								return num * factor;
+							});
+						}
+						path._update();
+					}
+					else if(NonPath.support.includes(element.tagName)){
+						const nonpath = new NonPath(element);
+						Object.keys(nonpath.data).forEach(key => {
+							nonpath.data[key] *= factor;
+						});
+						nonpath._update();
+					}
+					const css = parseCSS(element.getAttribute('style'));
+					if(!css.length) continue;
+					const properties = ['stroke-width'];
+					properties.forEach(property => {
+						const declaration = css.find(declaration => declaration.property == property);
+						if(!declaration) return;
+						const value = declaration.value;
+						if(!value || isNaN(parseFloat(value))) return;
+						const unit = value.replace(/\d*[\.\d]\d*/, '');
+						declaration.value = (parseFloat(value) * factor) + '' + unit;
+					});
+					const cssString = css.reduce((result, declaration) => result + declaration.property + ':' + declaration.value + ';', '');
+					element.setAttribute('style', cssString);
+				}
+			},
+			description: 'scale svg by a factor',
+			syntax: [['scale [factor]', 'scale all supported elements by a factor']]
 		}
 	}
 }
