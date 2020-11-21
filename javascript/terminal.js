@@ -331,6 +331,25 @@ const terminal = {
 			},
 			description: 'scale svg by a factor',
 			syntax: [['scale [factor]', 'scale all supported elements by a factor']]
+		},
+		'encode': {
+			action: function(){
+				const xmlns = current.SVG.hasAttribute('xmlns');
+				if(!xmlns) current.SVG.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+				let result = current.getSVGAsText();
+				if(!xmlns) current.SVG.removeAttribute('xmlns');
+				result = result.replace(/"/g, '\'')
+					.replace(/>\s+</g, '><')
+					.replace(/\s{2,}/g, ' ')
+					.replace(/[\r\n%#()<>?[\\\]^`{|}]/g, encodeURIComponent);
+				result = `"data:image/svg+xml,${result}"`;
+				terminal.write(result);
+				navigator.clipboard.writeText(result)
+					.then(() => terminal.write('result has been copied to clipboard'))
+					.catch(() => terminal.error('result could not be copied to clipboard'));
+			},
+			description: 'encode to data URL',
+			syntax: [['encode', 'converts SVG to data URL and copies to clipboard']]
 		}
 	}
 }
