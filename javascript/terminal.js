@@ -342,7 +342,7 @@ const terminal = {
 					.replace(/>\s+</g, '><')
 					.replace(/\s{2,}/g, ' ')
 					.replace(/[\r\n%#()<>?[\\\]^`{|}]/g, encodeURIComponent);
-				result = `"data:image/svg+xml,${result}"`;
+				result = `data:image/svg+xml,${result}`;
 				terminal.write(result);
 				navigator.clipboard.writeText(result)
 					.then(() => terminal.write('result has been copied to clipboard'))
