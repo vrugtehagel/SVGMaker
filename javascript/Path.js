@@ -116,12 +116,15 @@ class Path {
 		return result;
 	};
 	moveBy(x, y){
+		const countDecimals = number => `${number}`.split('.')[1]?.length ?? 0
+		const numDecimals = countDecimals(options.snap);
 		this.data.forEach(item => {
 			const commands = Path.commands[item.command];
 			item.data = item.data.map((num, ind) => {
-				if(commands[ind] == 'x') return num + x;
-				if(commands[ind] == 'y') return num + y;
-				return num;
+				const result = commands[ind] == 'x'
+					? num + x
+					: commands[ind] == 'y' ? num + y : num;
+				return Number(result.toFixed(Math.max(numDecimals, countDecimals(num))))
 			});
 		});
 		this._update();
@@ -221,7 +224,7 @@ class Path {
 		// x and y now contain the end points of item
 		const newItem = {
 			command,
-			data: Path.commands[command].map((role, i) => role == 'x' ? x : role == 'y' ? y : i < 2 ? 1 : 0),
+			data: Path.commands[command].map((role, i) => role == 'x' ? x : role == 'y' ? y : i < 2 ? options.snap : 0),
 			absolute: true
 		};
 		this.data.splice(item.index + 1, 0, newItem);

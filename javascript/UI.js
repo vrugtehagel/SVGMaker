@@ -440,8 +440,10 @@ const UI = {
 		getMousePosition(x, y){
 			const decimals = options.snap.toString().split('.')[1];
 			const numDecimals = decimals ? decimals.length : 0;
-			const roundTo = (x, d) => d ? Math.round(x * 10 ** d) / 10 ** d : x;
-			const snap = x => roundTo(options.snap * Math.round(x / options.snap), numDecimals);
+			const snap = x => {
+				const value = options.snap * Math.round(x / options.snap)
+				return Number(value.toFixed(numDecimals));
+			};
 			const rect = current.SVG.getBoundingClientRect();
 			const size = current.size;
 			return {
